@@ -60,7 +60,7 @@ class About extends Component{
 
         <h4>Source code</h4>
         <p>This is an open source project you can find the source code at this link
-          on <a target="_blank" rel="noopener noreferrer" href="https://reactjs.org/">Github</a>.
+          on <a target="_blank" rel="noopener noreferrer" href="https://github.com/alessandrobattisti/Vessel-Measuring-Tool">Github</a>.
           You can download and use this webapp even without an internet connection, after you've downloded the source code
           you can open the <code>index.html</code> file in the <code>build</code> folder with any modern browser and start measuring
           your vessels.
