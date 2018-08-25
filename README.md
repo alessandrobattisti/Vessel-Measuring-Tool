@@ -15,8 +15,10 @@ You can watch this youtube video that show how to use this app. If you have prob
 - run `npm install`
 - run `npm start`
 
-You can download and use this webapp even without an internet connection, after you've downloded the source code
-you can open the `index.html` file in the `build` folder with any modern browser and start measuring your vessels.
+***
+*You can download and use this webapp even without an internet connection, after you've downloded the source code
+you can open the `index.html` file in the `build` folder with any modern browser and start measuring your vessels.*
+***
 
 ### Alternatives
 
