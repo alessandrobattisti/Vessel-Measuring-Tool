@@ -72,6 +72,12 @@ class About extends Component{
           check them out. You can find a list at
           this <a target="_blank" rel="noopener noreferrer" href="https://kotyle.readthedocs.io/en/latest/other.html">link</a>.
         </p>
+
+        <h4>Limitations</h4>
+        <p>
+        Although this webapp displays nicely on different devices, drawing capacity is currently available only using a mouse.
+        </p>
+
         <h4>Dependencies</h4>
         <p>This app has been built using these javascript libraries:</p>
         <ul>

@@ -21,6 +21,10 @@ You can watch this youtube video that show how to use this app. If you have prob
 you can open the `index.html` file in the `build` folder with any modern browser and start measuring your vessels.*
 ***
 
+### Limitations
+
+Although this web-app displays nicely on different devices, drawing capacity is currently available only using a mouse.
+
 ### Alternatives
 
 There are many other projects that calculate vessel capacity, it this projects doesn't work for you you should
