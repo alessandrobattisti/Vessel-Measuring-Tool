@@ -2,6 +2,8 @@
 This is a simple webapp written in javascript using ReactJs Framework.
 It can be used to digitize archeological drawings of vessels in order to calculate their capacity and weight.
 
+[**Try it at this link**](https://alessandrobattisti.github.io/Vessel-Measuring-Tool/#/)
+
 ### How does it work?
 You can watch this youtube video that show how to use this app. If you have problems you can contact me or open an issue on github.
 
