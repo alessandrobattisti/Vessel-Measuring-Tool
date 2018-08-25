@@ -96,9 +96,10 @@ class Draw extends Component {
   }
 
   resizeSvg(){
-    this.x = this.svg.getBoundingClientRect().left+ window.scrollX
+    this.x = this.svg.getBoundingClientRect().left + window.scrollX
     this.y = this.svg.getBoundingClientRect().top + window.scrollY
-    this.new_point = new Point([0,0], this.canvas, this.x, this.y, 1, true)
+    this.new_point.x = this.x
+    this.new_point.y = this.y
     this.state.polylines.forEach(function(el){
       el.y = this.y
       el.x = this.x
