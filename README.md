@@ -14,6 +14,7 @@ You can watch this youtube video that show how to use this app. If you have prob
 - `cd` in the root folder
 - run `npm install`
 - run `npm start`
+- you should be able to use the webapp at `http://localhost:3000`
 
 ***
 *You can download and use this webapp even without an internet connection, after you've downloded the source code
