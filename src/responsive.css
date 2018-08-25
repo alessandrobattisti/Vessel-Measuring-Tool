@@ -1,0 +1,22 @@
+@media screen and (max-width: 1200px) {
+  #container, header {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 780px) {
+  #container {
+    padding: 5px;
+  }
+  #measures, #steps {
+    width: 100%;
+    padding: unset;
+  }
+  #polylines {
+    width: 100%;
+    height: unset;
+  }
+  #drawing {
+    width: 100%;
+  }
+}
