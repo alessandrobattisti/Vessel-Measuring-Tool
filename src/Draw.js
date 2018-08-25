@@ -200,6 +200,13 @@ class Draw extends Component {
       poly.el.classList.remove('active')
     })
     if(this.state.active_polyline){
+      //exit all possible editing states of active polyline
+      if(this.state.active_polyline.editing){
+        this.state.active_polyline.stopEditingPoints({code:'Escape'})
+      }
+      if(this.state.active_polyline.breaking_mode){
+        this.exitBreakLineMode({code:'Escape'})
+      }
       this.state.active_polyline.stopEditing({'code':'Escape'})
     }
   }
