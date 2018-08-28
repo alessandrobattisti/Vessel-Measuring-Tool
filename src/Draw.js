@@ -821,151 +821,151 @@ class Draw extends Component {
     download(json, `${title}.json`, "text/plain");
   }
 
-    //////////////////////////////////////////////////////////////////////////////
-    //                                  RENDER                                  //
-    //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  //                                  RENDER                                  //
+  //////////////////////////////////////////////////////////////////////////////
 
-    render() {
-      return (
-          <div id="container">
+  render() {
+    return (
+        <div id="container">
 
-            <Notification notification={this.state.notification} />
+          <Notification notification={this.state.notification} />
 
-            <h2>Draw</h2>
-            <section id="drawing">
-              <svg id="drawing-canvas" height="500" width="100%" ref={svg => {this.svg = svg}}>
-                <g className="svg-pan-zoom_viewport" id="canvas">
-                  <image ref={bck_image => {this.bck_image=bck_image}}
-                    id="bck-img" href={this.state.selectedFile} x="0" y="0"
-                    height={this.state.img_h} width={this.state.img_w}/>
-                </g>
-              </svg>
-              <div className="tools">
-                <div id="actions-title">Actions:</div>
-                <div
-                  className="interface-button"
-                  onClick={this.create_new_polyline.bind(this)}
-                  title="Create new line"
-                  alt="Create new line"
-                >
-                  New
-                </div>
-                <div
-                  className="interface-button"
-                  onClick={this.enterBreakLineMode.bind(this)}
-                  title="Break selected line"
-                  alt="Break selected line"
-                  >
-                  Break
-                </div>
-                <div
-                  className="interface-button"
-                  onClick={this.delete_line.bind(this)}
-                  title="Delete selected line"
-                  alt="Delete selected line"
-                  >
-                  Delete
-                </div>
-                <div
-                  className="interface-button"
-                  onClick={this.edit_line.bind(this)}
-                  title="Edit selected line"
-                  alt="Edit selected line"
-                  >
-                  Edit
-                </div>
-                <div
-                  className="interface-button"
-                  onClick={this.mirrorY.bind(this)}
-                  title="Edit selected line"
-                  alt="Edit selected line"
-                  >
-                  Mirror Y
-                </div>
-
-                <div id="actions-title2">Export:</div>
-                <div
-                  className="interface-button"
-                  onClick={this.download_svg.bind(this)}
-                  title="Download SVG (no scaling)"
-                  alt="Download SVG (no scaling)"
-                  >
-                  SVG
-                </div>
-                <div
-                  className="interface-button"
-                  onClick={this.download_dxf.bind(this)}
-                  title="Download all-lines as DXF (scaled: 1 unit = 1 meter)"
-                  alt="Download all-lines as DXF (scaled: 1 unit = 1 meter)"
-                  >
-                  DXF
-                </div>
-                <div
-                  className="interface-button"
-                  onClick={this.download_json.bind(this)}
-                  title="Download inner-profile as JSON (scaled: 1 unit = 1 meter)"
-                  alt="Download inner-profile as JSON (scaled: 1 unit = 1 meter)"
-                >
-                  JSON
-                </div>
+          <h2>Draw</h2>
+          <section id="drawing">
+            <svg id="drawing-canvas" height="500" width="100%" ref={svg => {this.svg = svg}}>
+              <g className="svg-pan-zoom_viewport" id="canvas">
+                <image ref={bck_image => {this.bck_image=bck_image}}
+                  id="bck-img" href={this.state.selectedFile} x="0" y="0"
+                  height={this.state.img_h} width={this.state.img_w}/>
+              </g>
+            </svg>
+            <div className="tools">
+              <div id="actions-title">Actions:</div>
+              <div
+                className="interface-button"
+                onClick={this.create_new_polyline.bind(this)}
+                title="Create new line"
+                alt="Create new line"
+              >
+                New
               </div>
-            </section>
+              <div
+                className="interface-button"
+                onClick={this.enterBreakLineMode.bind(this)}
+                title="Break selected line"
+                alt="Break selected line"
+                >
+                Break
+              </div>
+              <div
+                className="interface-button"
+                onClick={this.delete_line.bind(this)}
+                title="Delete selected line"
+                alt="Delete selected line"
+                >
+                Delete
+              </div>
+              <div
+                className="interface-button"
+                onClick={this.edit_line.bind(this)}
+                title="Edit selected line"
+                alt="Edit selected line"
+                >
+                Edit
+              </div>
+              <div
+                className="interface-button"
+                onClick={this.mirrorY.bind(this)}
+                title="Edit selected line"
+                alt="Edit selected line"
+                >
+                Mirror Y
+              </div>
 
-            <section id="polylines">
-              <div id="layer-title">Layers:</div>
-                {this.state.toDo.image && <div id="image-layer" className="polyline-layer">
-                  <div className="slidecontainer">
-                   <label htmlFor="myRange">Rotate image</label>
-                   <input
-                     type="number" min="0" max="360" defaultValue="0"
-                     className="slider" id="myRange" step="0.01"
-                     onChange={this.image_rotate.bind(this)}
-                     />
-                 </div>
-               </div>}
-                {this.state.polylines.map(el =>
-                  <ListPoly
-                    key={el.id}
-                    name={el.name}
-                    type={el.type}
-                    id={el.id}
-                    delete_line={this.delete_line.bind(this)}
-                    edit_line={this.edit_line.bind(this)}
-                    colorChange={this.colorChange.bind(this)}
-                    typeChange={this.typeChange.bind(this)}
-                    selectLayer={this.selectLayer.bind(this)}
-                    selectedPoly={this.state.active_polyline ? this.state.active_polyline.id : ''}
-                    />
-                )}
-            </section>
-            <div className="basic-info">
-              Double-left-click to draw a point, single left-click and hold to pan the view,
-              single left-click to select vertices (in edit and break mode),
-              mouse wheel scroll to zoom in and out. Click the listed lines in the Layer section to select a line.
-              Press <code>Esc</code> or <code>q</code> to quit editing mode and deselect.
+              <div id="actions-title2">Export:</div>
+              <div
+                className="interface-button"
+                onClick={this.download_svg.bind(this)}
+                title="Download SVG (no scaling)"
+                alt="Download SVG (no scaling)"
+                >
+                SVG
+              </div>
+              <div
+                className="interface-button"
+                onClick={this.download_dxf.bind(this)}
+                title="Download all-lines as DXF (scaled: 1 unit = 1 meter)"
+                alt="Download all-lines as DXF (scaled: 1 unit = 1 meter)"
+                >
+                DXF
+              </div>
+              <div
+                className="interface-button"
+                onClick={this.download_json.bind(this)}
+                title="Download inner-profile as JSON (scaled: 1 unit = 1 meter)"
+                alt="Download inner-profile as JSON (scaled: 1 unit = 1 meter)"
+              >
+                JSON
+              </div>
             </div>
-            <Steps
-              toDo={this.state.toDo}
-              fileChangedHandler={this.fileChangedHandler.bind(this)}
-              definerotAxis={this.definerotAxis.bind(this)}
-              defineMetric={this.defineMetric.bind(this)}
-              handleForm={this.metricForm.bind(this)}
-              create_new_polyline={this.create_new_polyline.bind(this)}
-              defineMaxFill={this.defineMaxFill.bind(this)}
-              nHandleForm={this.nHandleForm.bind(this)}
-              />
+          </section>
 
-            <Measures
-              toDo={this.state.toDo}
-              vessel_volume={this.state.vessel_volume}
-              content_volume={this.state.vessel_capacity}
-              joinIntExt={this.joinIntExt.bind(this)}
-              create_inner_polygon={this.create_inner_polygon.bind(this)}
-              handle_volume={this.state.handle_volume}
-              handleVolume={this.handleVolume.bind(this)}
+          <section id="polylines">
+            <div id="layer-title">Layers:</div>
+              {this.state.toDo.image && <div id="image-layer" className="polyline-layer">
+                <div className="slidecontainer">
+                 <label htmlFor="myRange">Rotate image</label>
+                 <input
+                   type="number" min="0" max="360" defaultValue="0"
+                   className="slider" id="myRange" step="0.01"
+                   onChange={this.image_rotate.bind(this)}
+                   />
+               </div>
+             </div>}
+              {this.state.polylines.map(el =>
+                <ListPoly
+                  key={el.id}
+                  name={el.name}
+                  type={el.type}
+                  id={el.id}
+                  delete_line={this.delete_line.bind(this)}
+                  edit_line={this.edit_line.bind(this)}
+                  colorChange={this.colorChange.bind(this)}
+                  typeChange={this.typeChange.bind(this)}
+                  selectLayer={this.selectLayer.bind(this)}
+                  selectedPoly={this.state.active_polyline ? this.state.active_polyline.id : ''}
+                  />
+              )}
+          </section>
+          <div className="basic-info">
+            Double-left-click to draw a point, single left-click and hold to pan the view,
+            single left-click to select vertices (in edit and break mode),
+            mouse wheel scroll to zoom in and out. Click the listed lines in the Layer section to select a line.
+            Press <code>Esc</code> or <code>q</code> to quit editing mode and deselect.
+          </div>
+          <Steps
+            toDo={this.state.toDo}
+            fileChangedHandler={this.fileChangedHandler.bind(this)}
+            definerotAxis={this.definerotAxis.bind(this)}
+            defineMetric={this.defineMetric.bind(this)}
+            handleForm={this.metricForm.bind(this)}
+            create_new_polyline={this.create_new_polyline.bind(this)}
+            defineMaxFill={this.defineMaxFill.bind(this)}
+            nHandleForm={this.nHandleForm.bind(this)}
             />
 
-          </div>
+          <Measures
+            toDo={this.state.toDo}
+            vessel_volume={this.state.vessel_volume}
+            content_volume={this.state.vessel_capacity}
+            joinIntExt={this.joinIntExt.bind(this)}
+            create_inner_polygon={this.create_inner_polygon.bind(this)}
+            handle_volume={this.state.handle_volume}
+            handleVolume={this.handleVolume.bind(this)}
+          />
+
+        </div>
       );
     }
   }
