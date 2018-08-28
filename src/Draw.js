@@ -357,7 +357,7 @@ class Draw extends Component {
       this.setState({metric_value:obj.value, metric_unit: obj.unit}, () => {
         if(this.metric && this.metric.points.length===2){
           this.scale = calcScale(this.metric, this.state.metric_value, this.state.metric_unit)
-          this.maxFill.editing = false
+          this.metric.editing = false
           //update volume info when metric info are updated
           if(this.innerPolygon){
             this.setState({vessel_capacity:calc_vol(this.innerPolygon, this.scale)})
@@ -446,6 +446,11 @@ class Draw extends Component {
     else if(this.metric.points.length === 1){
       //this is the 2nd point, add it and exit editing
       this.metric.add_point(e)
+      //if two points are identical remove the last one and keep editing
+      if(this.metric.points[0].cx === this.metric.points[1].cx && this.metric.points[0].cy === this.metric.points[1].cy){
+        this.metric.removeLastPoint()
+        return
+      }
       this.metric.stroke = 'red'
       this.metric.stopEditing({code:"Escape"})
       //set color
