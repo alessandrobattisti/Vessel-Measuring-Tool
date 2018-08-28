@@ -30,14 +30,19 @@ class Draw extends Component {
     img_w: 1000,
     img_h: 1000,
     notification:{id:-1,message:''},
-    toDo:{image:false, rotAxis:false, metric:false,
-    int_prof:false, out_prof:false, ref_unit:false,
-    maxFill:false, handle_length:false, handle_sec:false},
+    toDo:{
+      image:false, rotAxis:false, metric:false,
+      int_prof:false, out_prof:false, ref_unit:false,
+      maxFill:false, handle_length:false, handle_sec:false
+    },
     handle_volume:0,
     handle_n:0
   }
   id = 0
   not_id = 0
+  maxFill = null
+  metric = null
+  rotAxis = null
 
   componentDidMount(){
     //init canvas
@@ -168,7 +173,6 @@ class Draw extends Component {
   //////////////////////////////////////////////////////////////////////////////
 
   unselect_polyline(e){
-    //console.log(e.code)
     if( e.code === 'Escape' || e.code === 'KeyQ'){
       if(this.state.active_polyline){
         this.state.active_polyline.el.classList.remove('active')
@@ -214,6 +218,27 @@ class Draw extends Component {
         this.exitBreakLineMode({code:'Escape'})
       }
       this.state.active_polyline.stopEditing({'code':'Escape'})
+    }
+    if(this.maxFill && this.maxFill.is_editing){
+      this.canvas.removeEventListener('dblclick', this.addMaxFill)
+      this.maxFill.stopEditing({'code':'Escape'})
+      this.removeCursorPoint()
+      this.canvas.removeChild(this.maxFill.el)
+      this.maxFill = null;
+    }
+    if(this.metric && this.metric.is_editing){
+      this.canvas.removeEventListener('dblclick', this.addMetric)
+      this.metric.stopEditing({'code':'Escape'})
+      this.removeCursorPoint()
+      this.canvas.removeChild(this.metric.el)
+      this.metric = null;
+    }
+    if(this.rotAxis && this.rotAxis.is_editing){
+      this.canvas.removeEventListener('dblclick', this.addRotAxis)
+      this.rotAxis.stopEditing({'code':'Escape'})
+      this.removeCursorPoint()
+      this.canvas.removeChild(this.rotAxis.el)
+      this.rotAxis = null;
     }
   }
 
@@ -276,6 +301,7 @@ class Draw extends Component {
   //////////////////////////////////////////////////////////////////////////////
 
   joinIntExt(){
+    this.globalStopEditingMode()
     const poly1 = this.state.polylines.filter(el => el.type==='int_prof')[0]
     const poly2 = this.state.polylines.filter(el => el.type==='out_prof')[0]
     if(!poly1 || !poly2){
@@ -298,6 +324,7 @@ class Draw extends Component {
   }
 
   create_inner_polygon(){
+    this.globalStopEditingMode()
     let poly = this.state.polylines.filter(el => el.type==='int_prof')
     if(poly.length===0){
       this.addNotification("To calculate vessel capacity you need an internal profile")
@@ -330,6 +357,7 @@ class Draw extends Component {
       this.setState({metric_value:obj.value, metric_unit: obj.unit}, () => {
         if(this.metric && this.metric.points.length===2){
           this.scale = calcScale(this.metric, this.state.metric_value, this.state.metric_unit)
+          this.maxFill.editing = false
           //update volume info when metric info are updated
           if(this.innerPolygon){
             this.setState({vessel_capacity:calc_vol(this.innerPolygon, this.scale)})
@@ -346,6 +374,7 @@ class Draw extends Component {
   }
 
   defineMaxFill(){
+    this.globalStopEditingMode()
     //remove maxFill if present
     if(this.maxFill){
       this.canvas.removeChild(this.maxFill.el)
@@ -366,6 +395,7 @@ class Draw extends Component {
     this.addCursorPoint()
     this.canvas.addEventListener('dblclick', this.addMaxFill)
     this.maxFill.stopEditing({code:'Escape'})
+    this.maxFill.is_editing = true
   }
 
   addMaxFill(e){
@@ -374,6 +404,7 @@ class Draw extends Component {
     this.canvas.appendChild(this.maxFill.el)
     this.maxFill.draw()
     //exit editing mode
+    this.maxFill.is_editing = false
     this.maxFill.el.classList.remove('active')
     this.canvas.removeEventListener('dblclick', this.addMaxFill)
     this.maxFill.stopEditing({'code':'Escape'})
@@ -384,7 +415,7 @@ class Draw extends Component {
   }
 
   defineMetric(){
-    this.unselect_polyline({code:"Escape"})
+    this.globalStopEditingMode()
     //remove metric if present
     if(this.metric){
       this.canvas.removeChild(this.metric.el)
@@ -405,6 +436,7 @@ class Draw extends Component {
     this.addCursorPoint()
     this.canvas.addEventListener('dblclick', this.addMetric)
     this.metric.stopEditing({code:'Escape'})
+    this.metric.is_editing = true
   }
 
   addMetric(e){
@@ -419,6 +451,7 @@ class Draw extends Component {
       //set color
       this.metric.el.classList.remove('active')
       //stop editing
+      this.metric.is_editing = false
       this.canvas.removeEventListener('dblclick', this.addMetric)
       this.updateToDo('metric', true)
       this.removeCursorPoint()
@@ -437,18 +470,13 @@ class Draw extends Component {
   }
 
   definerotAxis(){
+    this.globalStopEditingMode()
     //remove if already present
     if(this.rotAxis){
       this.canvas.removeChild(this.rotAxis.el)
       window.r_axis = null
       this.updateToDo('rotAxis', false)
     }
-    //start editing
-    this.addCursorPoint()
-    this.canvas.addEventListener('dblclick', this.addRotAxis)
-  }
-
-  addRotAxis(e){
     //create rotation axis polyline
     this.rotAxis = new Polyline({
       points: [],
@@ -460,11 +488,19 @@ class Draw extends Component {
       offsetY: this.y,
       currentZoom: this.panZoomTiger.getZoom()
     })
+    //start editing
+    this.rotAxis.is_editing = true
+    this.addCursorPoint()
+    this.canvas.addEventListener('dblclick', this.addRotAxis)
+  }
+
+  addRotAxis(e){
     this.rotAxis.stroke = '#ff5a00'
     this.rotAxis.add_point(e)
     this.canvas.appendChild(this.rotAxis.el)
     this.rotAxis.draw()
     //exit editing mode
+    this.rotAxis.is_editing = false
     this.rotAxis.el.classList.remove('active')
     this.canvas.removeEventListener('dblclick', this.addRotAxis)
     this.rotAxis.stopEditing({'code':'Escape'})
@@ -722,6 +758,7 @@ class Draw extends Component {
   //////////////////////////////////////////////////////////////////////////////
   //                                 mirrorY                                  //
   //////////////////////////////////////////////////////////////////////////////
+
   mirrorY(){
     if(!this.state.active_polyline){
       this.addNotification("No line selected")
@@ -740,6 +777,7 @@ class Draw extends Component {
     new_polylines.push(mirrored_line)
     this.setState({active_polyline:mirrored_line, polylines:new_polylines})
   }
+
   //////////////////////////////////////////////////////////////////////////////
   //                                 DOWNLOAD                                 //
   //////////////////////////////////////////////////////////////////////////////
