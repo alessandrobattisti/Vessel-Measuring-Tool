@@ -1,3 +1,4 @@
+import Polyline from './svg_classes/Polyline'
 const d3 = require('d3-polygon')
 
 //http://paulbourke.net/geometry/pointlineplane/javascript.txt
@@ -220,6 +221,29 @@ function polyPointsToPathData(points_string){
 	return 'M'+points_string.replace(/, /g, ',').replace(/ $/, '').replace(/ /g, 'L')
 }
 
+function mirrorY(line, canvas, id, x, y, zoom){
+	let mirrored = new Polyline({
+		points: [],
+		id: line.id + '-mirrored-' + id,
+		type: 'other',
+		selected: true,
+		canvas: canvas,
+		offsetX: x,
+		offsetY: y,
+		currentZoom: zoom
+	})
+	line.points.forEach(function(point){
+		let new_x = point.cx - window.r_axis
+		if(new_x <= 0){
+			new_x = Math.abs(new_x) + window.r_axis
+		}else{
+			new_x = window.r_axis - new_x
+		}
+		mirrored.appendPoint([new_x, point.cy])
+	})
+	return mirrored
+}
+
 export {
   calc_vol,
   distance,
@@ -231,5 +255,6 @@ export {
   recreate_snapping_points,
   join2Polylines,
   innerProfileToPolygon,
-	polyPointsToPathData
+	polyPointsToPathData,
+	mirrorY
 }

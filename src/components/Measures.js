@@ -17,7 +17,7 @@ export default class Measures extends Component {
   }
 
   componentWillReceiveProps(nProp){
-    console.log(this.state.content_volume, this.state.handle_volume)
+    //console.log(this.state.content_volume, this.state.handle_volume)
     this.setState({
       content_volume:nProp.content_volume,
       vessel_volume:nProp.vessel_volume,

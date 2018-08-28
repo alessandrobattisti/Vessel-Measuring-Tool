@@ -8,7 +8,7 @@ import Notification from './components/Notification'
 import Steps from './components/Steps'
 import Measures from './components/Measures'
 import { calc_vol, calcScale, join2Polylines, innerProfileToPolygon,
-  create_polygon, recreate_snapping_points, toD3 } from './calc_functions'
+  create_polygon, recreate_snapping_points, toD3, mirrorY } from './calc_functions'
 const svgPanZoom = require('svg-pan-zoom')
 const download = require("downloadjs")
 
@@ -168,7 +168,7 @@ class Draw extends Component {
   //////////////////////////////////////////////////////////////////////////////
 
   unselect_polyline(e){
-    console.log(e.code)
+    //console.log(e.code)
     if( e.code === 'Escape' || e.code === 'KeyQ'){
       if(this.state.active_polyline){
         this.state.active_polyline.el.classList.remove('active')
@@ -720,6 +720,27 @@ class Draw extends Component {
   }
 
   //////////////////////////////////////////////////////////////////////////////
+  //                                 mirrorY                                  //
+  //////////////////////////////////////////////////////////////////////////////
+  mirrorY(){
+    if(!this.state.active_polyline){
+      this.addNotification("No line selected")
+      return
+    }
+    if(!this.rotAxis){
+      this.addNotification("No rotation axis defined")
+      return
+    }
+    const line_to_mirror = this.state.active_polyline
+    const mirrored_line = mirrorY(line_to_mirror, this.canvas, this.id, this.x, this.y, window.zoom)
+    mirrored_line.stopEditing({code:'Escape'})
+    this.globalStopEditingMode()
+    this.id++
+    let new_polylines = this.state.polylines
+    new_polylines.push(mirrored_line)
+    this.setState({active_polyline:mirrored_line, polylines:new_polylines})
+  }
+  //////////////////////////////////////////////////////////////////////////////
   //                                 DOWNLOAD                                 //
   //////////////////////////////////////////////////////////////////////////////
 
@@ -852,6 +873,14 @@ class Draw extends Component {
                   alt="Edit selected line"
                   >
                   Edit
+                </div>
+                <div
+                  className="interface-button"
+                  onClick={this.mirrorY.bind(this)}
+                  title="Edit selected line"
+                  alt="Edit selected line"
+                  >
+                  Mirror Y
                 </div>
 
                 <div id="actions-title2">Export:</div>
