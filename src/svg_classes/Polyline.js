@@ -1,6 +1,6 @@
 import Point from './Point'
 import MidPoint from './MidPoint'
-import {cleanedPoly} from './../calc_functions'
+import {cleanedPoly, distance} from './../calc_functions'
 
 export default class Poly {
 
@@ -52,6 +52,19 @@ export default class Poly {
     if (this.editing) {
       this.draw_midpoints()
     }
+  }
+
+  getTotalLength() {
+    let x = 0;
+    let tot = 0;
+    this.points.forEach(function(p){
+      if(x < this.points.length-1){
+        const dist = distance([p.cx, p.cy], [this.points[x+1].cx, this.points[x+1].cy])
+        tot += dist
+      }
+      x++
+    }.bind(this))
+    return tot
   }
 
   draw_midpoints() {

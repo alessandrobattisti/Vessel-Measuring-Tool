@@ -377,10 +377,12 @@ svg {
 .interface-button2 {
   background: #4cd964;
   padding: 10px;
-  width: 100%;
+  width: 40%;
   color: white;
   font-weight: bold;
   cursor: pointer;
+  font-size: 16px;
+  margin-right: 10px;
 }
 
 .interface-button2:hover {
@@ -389,10 +391,11 @@ svg {
 
 .calc-buttons {
   justify-content: space-between;
-  display: flex;
+  /*display: flex;*/
   margin-top: 0;
 }
 
+/*
 .calc-column:last-child{
   padding: 10px;
   padding-right: 0;
@@ -402,13 +405,16 @@ svg {
   padding: 10px;
   padding-left: 0;
 }
+*/
 
 .calc-column {
-  width: 50%;
+  width: 100%;
+  display: flex;
+  margin-top: 10px
 }
 
 .measures{
-  width: 100%;
+  width: 60%;
   margin-top: 10px;
   text-align: left;
   font-weight: bold;

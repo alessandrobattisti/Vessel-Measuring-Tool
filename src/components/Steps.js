@@ -10,7 +10,14 @@ export default class Steps extends Component {
       this.props.handleForm({ref_unit: false, value:value, unit:unit})
     }
   }
-
+  nHandleForm(){
+    const value = this.handle_n.value
+    if(value){
+      this.props.nHandleForm({handle_n: true, value:value})
+    }else{
+      this.props.nHandleForm({handle_n: false, value:0})
+    }
+  }
   render(){
     return (
       <section id="steps">
@@ -54,7 +61,10 @@ export default class Steps extends Component {
               4. Define reference scale length
             </div>
             <div className="do-it">
-                <input type="number" id="ref-scale" step="0.01" onChange={this.metricForm.bind(this)} ref={ref_val => {this.ref_val = ref_val}}></input>
+                <input type="number" id="ref-scale" min="0" step="0.01"
+                  defaultValue="0"
+                  onChange={this.metricForm.bind(this)} ref={ref_val => {this.ref_val = ref_val}}>
+                </input>
                 <select defaultValue="cm" ref={reference_unit => {this.reference_unit = reference_unit}} onChange={this.metricForm.bind(this)} >
                   <option value="cm">Cm</option>
                   <option value="inch">Inches</option>
@@ -91,6 +101,40 @@ export default class Steps extends Component {
               <button onClick={this.props.defineMaxFill}>Draw max fill limit</button>
             </div>
           </li>
+          <li>
+            <div className={this.props.toDo.handle_length ? "done" : "to-do-optional"}>
+            </div>
+            <div className="to-do-list">
+              8- Draw handle length
+            </div>
+            <div className="do-it">
+              <button onClick={()=>this.props.create_new_polyline('handle_length')}>Draw handle length</button>
+            </div>
+          </li>
+          <li>
+            <div className={this.props.toDo.handle_sec ? "done" : "to-do-optional"}>
+            </div>
+            <div className="to-do-list">
+              9- Draw handle section
+            </div>
+            <div className="do-it">
+              <button onClick={()=>this.props.create_new_polyline('handle_sec')}>Draw handle section</button>
+            </div>
+          </li>
+          <li>
+            <div className={this.props.toDo.handle_n ? "done" : "to-do-optional"}>
+            </div>
+            <div className="to-do-list">
+              10- Number of handles
+            </div>
+            <div className="do-it">
+              <input type="number" id="ref-scale" step="1" min="0"
+                onChange={this.nHandleForm.bind(this)}
+                defaultValue="0"
+                ref={handle_n => {this.handle_n = handle_n}}></input>
+            </div>
+          </li>
+
         </ul>
       </section>
     )

@@ -6,7 +6,8 @@ export default class ListPoly extends Component {
       {val: 'other', text: 'Other'},
       {val: 'int_prof', text: 'Inner profile'},
       {val: 'out_prof', text: 'Outer profile'},
-      {val: 'handle', text: 'Handle'},
+      {val: 'handle_length', text: 'Handle length'},
+      {val: 'handle_sec', text: 'Handle section'},
     ],
     colors : [
       {val: 'magenta', text: 'Magenta'},

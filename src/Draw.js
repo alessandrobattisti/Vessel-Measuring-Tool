@@ -8,7 +8,7 @@ import Notification from './components/Notification'
 import Steps from './components/Steps'
 import Measures from './components/Measures'
 import { calc_vol, calcScale, join2Polylines, innerProfileToPolygon,
-  create_polygon, recreate_snapping_points } from './calc_functions'
+  create_polygon, recreate_snapping_points, toD3 } from './calc_functions'
 const svgPanZoom = require('svg-pan-zoom')
 const download = require("downloadjs")
 
@@ -31,7 +31,10 @@ class Draw extends Component {
     img_h: 1000,
     notification:{id:-1,message:''},
     toDo:{image:false, rotAxis:false, metric:false,
-      int_prof:false, out_prof:false, ref_unit:false, maxFill:false}
+    int_prof:false, out_prof:false, ref_unit:false,
+    maxFill:false, handle_length:false, handle_sec:false},
+    handle_volume:0,
+    handle_n:0
   }
   id = 0
   not_id = 0
@@ -182,6 +185,9 @@ class Draw extends Component {
 
       this.checkProfile('int_prof')
       this.checkProfile('out_prof')
+      this.checkProfile('handle_length');
+      this.checkProfile('handle_sec');
+
       if(this.new_point.added){
         this.removeCursorPoint()
       }
@@ -260,6 +266,7 @@ class Draw extends Component {
     else{
       this.updateToDo(type, false)
       let profile = type === 'int_prof' ? 'internal profile' : 'outer profile'
+
       this.addNotification(`There should be only one ${profile}`)
     }
   }
@@ -487,7 +494,12 @@ class Draw extends Component {
           }
           return el
         })
-      }, ()=> { this.checkProfile('int_prof'); this.checkProfile('out_prof') }
+      }, ()=> {
+        this.checkProfile('int_prof');
+        this.checkProfile('out_prof');
+        this.checkProfile('handle_length');
+        this.checkProfile('handle_sec');
+      }
     )
   }
 
@@ -505,6 +517,8 @@ class Draw extends Component {
       }, ()=> {
         this.checkProfile('int_prof');
         this.checkProfile('out_prof');
+        this.checkProfile('handle_length');
+        this.checkProfile('handle_sec');
         recreate_snapping_points(this.state.polylines)
       }
     )
@@ -651,6 +665,58 @@ class Draw extends Component {
           toDo: toDo
          })
     }.bind(this)
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  //                            HANDLE(S) VOLUME                              //
+  //////////////////////////////////////////////////////////////////////////////
+
+  handleVolume(){
+    //GET HANDLE LENGTH
+    let handle_length = this.state.polylines.filter(el => el.type === 'handle_length')
+    if(handle_length.length > 1){
+      this.addNotification('There should be only one handle length')
+      return
+    }else if(handle_length.length === 0){
+      this.addNotification('Handle length not found')
+      return
+    }else{
+      handle_length = handle_length[0]
+    }
+
+    let l = handle_length.getTotalLength()
+    if(this.scale){
+      l = l * this.scale // unit decimeter
+    }
+
+    //GET HANDLE SECTION AREA
+    let handle_sec = this.state.polylines.filter(el => el.type === 'handle_sec')
+    if(handle_sec.length > 1){
+      this.addNotification('There should be only one handle section')
+      return
+    }else if(handle_sec.length === 0){
+      this.addNotification('Handle section not found')
+      return
+    }else{
+      handle_sec = handle_sec[0]
+    }
+
+    if(handle_sec.points[0].cx !== handle_sec.points[handle_sec.points.length -1].cx &&
+       handle_sec.points[0].cy !== handle_sec.points[handle_sec.points.length -1].cy){
+      this.addNotification('Handle section should be a closed polyline')
+    }
+    let a = toD3(handle_sec.points).area
+    if(this.scale){
+      a = a * Math.pow(this.scale, 2)
+    }
+
+    //save RESULTS
+    this.setState({handle_volume:Math.abs(l * a * this.state.handle_n)})
+  }
+
+  nHandleForm(obj){
+    this.updateToDo('handle_n',obj.handle_n)
+    this.setState({handle_n:obj.value}, ()=> this.handleVolume())
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -857,6 +923,7 @@ class Draw extends Component {
               handleForm={this.metricForm.bind(this)}
               create_new_polyline={this.create_new_polyline.bind(this)}
               defineMaxFill={this.defineMaxFill.bind(this)}
+              nHandleForm={this.nHandleForm.bind(this)}
               />
 
             <Measures
@@ -865,6 +932,8 @@ class Draw extends Component {
               content_volume={this.state.vessel_capacity}
               joinIntExt={this.joinIntExt.bind(this)}
               create_inner_polygon={this.create_inner_polygon.bind(this)}
+              handle_volume={this.state.handle_volume}
+              handleVolume={this.handleVolume.bind(this)}
             />
 
           </div>

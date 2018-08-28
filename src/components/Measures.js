@@ -11,21 +11,34 @@ export default class Measures extends Component {
 
     content_specific_weight: 1,
     content_volume: 0,
+
+    handle_volume:0,
+    handle_weight:0
   }
 
   componentWillReceiveProps(nProp){
-    this.setState({content_volume:nProp.content_volume, vessel_volume:nProp.vessel_volume}, () => this.vesselWeightCalc())
+    console.log(this.state.content_volume, this.state.handle_volume)
+    this.setState({
+      content_volume:nProp.content_volume,
+      vessel_volume:nProp.vessel_volume,
+      handle_volume:nProp.handle_volume,
+      handle_weight:nProp.handle_volume * this.state.vessel_unit * this.state.vessel_specific_weight
+    }, () => this.vesselWeightCalc())
   }
 
   vesselWeightCalc(){
-    this.setState({ vessel_weight: this.state.vessel_unit * this.state.vessel_specific_weight * this.state.vessel_volume}, () => {
+    this.setState({
+        vessel_weight: (this.state.vessel_unit *
+                        this.state.vessel_specific_weight *
+                        this.state.vessel_volume ) +this.state.handle_weight
+      }, () => {
       this.contentWeightCalc()
     })
   }
 
   contentWeightCalc(){
     this.setState(
-      { total_weight: this.state.vessel_weight + (this.state.content_volume * this.state.content_specific_weight)}
+      { total_weight: this.state.vessel_weight + this.state.handle_weight + (this.state.content_volume * this.state.content_specific_weight)}
      )
   }
 
@@ -62,7 +75,7 @@ export default class Measures extends Component {
                <div
                  className="interface-button2"
                  onClick={this.props.create_inner_polygon}>
-                 Calculate capacity
+                 Calc. capacity
                </div>
 
               { this.props.content_volume &&
@@ -79,7 +92,7 @@ export default class Measures extends Component {
               <div
                 className="interface-button2"
                 onClick={this.props.joinIntExt}>
-                Calculate vessel volume
+                Calc. vessel body volume
               </div>
 
               { this.props.vessel_volume &&
@@ -90,6 +103,27 @@ export default class Measures extends Component {
 
             </div>
         }
+
+          { this.props.toDo.out_prof && this.props.toDo.int_prof
+            && this.props.toDo.ref_unit && this.props.toDo.metric &&
+            this.props.toDo.handle_sec && this.props.toDo.handle_length &&
+            this.props.toDo.handle_n &&
+             <div className="calc-column">
+              <div
+                className="interface-button2"
+                onClick={this.props.handleVolume}>
+                Calc. handle(s) volume
+              </div>
+
+              { this.props.vessel_volume &&
+               <div className="measures">
+                 Volume: {this.state.handle_volume.toFixed(2)} <span className="unit">dm<sup>3</sup> (liters)</span>
+               </div>
+               }
+
+            </div>
+        }
+
         </div>
         { this.props.toDo.out_prof && this.props.toDo.int_prof
           && this.props.toDo.ref_unit && this.props.toDo.metric &&
@@ -98,13 +132,13 @@ export default class Measures extends Component {
           <h3>Weight</h3>
           <div className="furtherCalc">
             <p>Insert specfic weight of vessel's material to calculate vessel weight:</p>
-            <input id="specific-weight" type="number" defaultValue="2"
+            <input id="specific-weight" type="number" defaultValue="2" min='0' step="0.01"
               onChange={this.VesselSpecWeightSetter.bind(this)}/>
             <select onChange={this.VesselUnitSetter.bind(this)}>
               <option value="1">kg/dm3</option>
               <option value="1.729994">oz/in3</option>
             </select>
-            <div className="calc-results">Vessel weight:
+            <div className="calc-results">Vessel tot. weight:
               <span id="vessel-weight"> {this.state.vessel_weight.toFixed(2)}</span>
               <span id="weight-unit"> Kg</span>
             </div>
