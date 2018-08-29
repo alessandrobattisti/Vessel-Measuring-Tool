@@ -72,7 +72,7 @@ export default class Steps extends Component {
                   onChange={this.metricForm.bind(this)} ref={ref_val => {this.ref_val = ref_val}}>
                 </input>
                 <select
-                  defaultValue={this.props.metric_unit}
+                  value={this.props.metric_unit}
                   ref={reference_unit => {this.reference_unit = reference_unit}}
                   onChange={this.metricForm.bind(this)}
                 >

@@ -149,6 +149,7 @@ class Draw extends Component {
       offsetY: this.y,
       currentZoom: this.panZoomTiger.getZoom()
     })
+    polyline.el.setAttribute('type', type)
     new_polylines.push( polyline )
     this.id++
     this.setState(
@@ -264,8 +265,10 @@ class Draw extends Component {
   }
 
   removeCursorPoint(){
-    this.canvas.removeChild(this.new_point.el)
-    this.new_point.added = false
+    if(this.new_point.added){
+      this.canvas.removeChild(this.new_point.el)
+      this.new_point.added = false
+    }
   }
 
   updateToDo(type, value){
@@ -889,9 +892,9 @@ class Draw extends Component {
     }
 
     //save data to svg polyline in order to reimport them later
-    this.maxFill ? this.maxFill.el.setAttribute('type','max_fill') : //pass
-    this.metric ? this.metric.el.setAttribute('type','metric') : //pass
-    this.rotAxis ? this.rotAxis.el.setAttribute('type','center') : //pass
+    this.maxFill ? this.maxFill.el.setAttribute('type','max_fill') : this.maxFill=null
+    this.metric ? this.metric.el.setAttribute('type','metric') : this.metric=null
+    this.rotAxis ? this.rotAxis.el.setAttribute('type','center') : this.rotAxis=null
 
     this.state.polylines.forEach(function(polyline){
       if(polyline.type==='handle_length'){
