@@ -9,7 +9,7 @@ export default class Notification extends Component {
       this.setState({id:nextProps.notification.id})
       this.notification.innerHTML = nextProps.notification.message
       this.notification.style.display = "block"
-      setTimeout(()=>this.notification.style.display="none", 1500)
+      setTimeout(()=>this.notification.style.display="none", 3000)
     }
   }
   render(){

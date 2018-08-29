@@ -30,7 +30,13 @@ export default class Steps extends Component {
               1. Select image
             </div>
             <div className="do-it">
-              <input className="hidden" type="file" id="file-uploader" onChange={this.props.fileChangedHandler}></input>
+              <input
+                className="hidden"
+                type="file"
+                accept=".jpg, .jpeg, .png"
+                id="file-uploader"
+                onChange={this.props.fileChangedHandler}>
+              </input>
               <label htmlFor="file-uploader">Select file</label>
             </div>
           </li>
@@ -62,10 +68,14 @@ export default class Steps extends Component {
             </div>
             <div className="do-it">
                 <input type="number" id="ref-scale" min="0" step="0.01"
-                  defaultValue="0"
+                  value={this.props.metric_value}
                   onChange={this.metricForm.bind(this)} ref={ref_val => {this.ref_val = ref_val}}>
                 </input>
-                <select defaultValue="cm" ref={reference_unit => {this.reference_unit = reference_unit}} onChange={this.metricForm.bind(this)} >
+                <select
+                  defaultValue={this.props.metric_unit}
+                  ref={reference_unit => {this.reference_unit = reference_unit}}
+                  onChange={this.metricForm.bind(this)}
+                >
                   <option value="cm">Cm</option>
                   <option value="inch">Inches</option>
                 </select>
@@ -130,7 +140,7 @@ export default class Steps extends Component {
             <div className="do-it">
               <input type="number" id="ref-scale" step="1" min="0"
                 onChange={this.nHandleForm.bind(this)}
-                defaultValue="0"
+                value={this.props.handle_n}
                 ref={handle_n => {this.handle_n = handle_n}}></input>
             </div>
           </li>

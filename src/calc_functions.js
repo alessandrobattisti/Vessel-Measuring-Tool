@@ -221,7 +221,7 @@ function polyPointsToPathData(points_string){
 	return 'M'+points_string.replace(/, /g, ',').replace(/ $/, '').replace(/ /g, 'L')
 }
 
-function mirrorY(line, canvas, id, x, y, zoom){
+function mirrorY(line, canvas, id, x, y){
 	let mirrored = new Polyline({
 		points: [],
 		id: line.id + '-mirrored-' + id,
@@ -230,7 +230,7 @@ function mirrorY(line, canvas, id, x, y, zoom){
 		canvas: canvas,
 		offsetX: x,
 		offsetY: y,
-		currentZoom: zoom
+		currentZoom: window.zoom
 	})
 	line.points.forEach(function(point){
 		let new_x = point.cx - window.r_axis
@@ -242,6 +242,67 @@ function mirrorY(line, canvas, id, x, y, zoom){
 		mirrored.appendPoint([new_x, point.cy])
 	})
 	return mirrored
+}
+
+/* convert a polyline points string to an array of points */
+function pointsToArray(points_string){
+	points_string = points_string.replace(/\s+$/g, '').replace(/, /g, ',')
+	let arr = points_string.split(' ')
+	let new_arr = []
+	arr.forEach(function(point){
+		let p = point.split(',')
+		new_arr.push([parseFloat(p[0]), parseFloat(p[1])])
+	})
+	return new_arr
+}
+
+function importSvg(lines, canvas, id, x, y){
+	lines = Array.from(lines)
+
+	let new_lines = []
+	let img_transform = false
+	let img_name = ''
+	lines.forEach(function(line){
+		if(line.localName === 'polyline'){
+			let new_line = new Polyline({
+				points: [],
+				id: id,
+				type: line.getAttribute('type'),
+				selected: true,
+				canvas: canvas,
+				offsetX: x,
+				offsetY: y,
+				currentZoom: window.zoom
+			})
+			new_line.el.style.fill = line.style.fill
+			new_line.el.style.stroke = line.style.stroke
+			new_line.fill = line.style.fill
+			new_line.stroke = line.style.stroke
+			new_line.el.setAttribute('type', line.getAttribute('type'))
+			if(line.getAttribute('type')==='metric'){
+				new_line.el.dataset.metric_value = line.dataset.metric_value
+				new_line.el.dataset.metric_unit = line.dataset.metric_unit
+			}
+			if(line.getAttribute('type')==='handle_length'){
+				new_line.el.dataset.handle_n = line.dataset.handle_n
+			}
+			id++
+
+			let new_arr = pointsToArray(line.getAttribute('points'))
+			new_arr.forEach(function(point){
+				new_line.appendPoint(point)
+			})
+			new_line.stopEditing({code:'Escape'})
+			new_lines.push(new_line)
+		}else if(line.localName === 'image'){
+			img_name = line.href.baseVal
+			if(line.style.transform){
+				img_transform = line.style.transform
+			}
+		}
+	})
+
+	return [new_lines, id, img_transform, img_name]
 }
 
 export {
@@ -256,5 +317,6 @@ export {
   join2Polylines,
   innerProfileToPolygon,
 	polyPointsToPathData,
-	mirrorY
+	mirrorY,
+	importSvg
 }

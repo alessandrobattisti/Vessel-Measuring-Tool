@@ -7,7 +7,7 @@ import ListPoly from './components/listPoly'
 import Notification from './components/Notification'
 import Steps from './components/Steps'
 import Measures from './components/Measures'
-import { calc_vol, calcScale, join2Polylines, innerProfileToPolygon,
+import { calc_vol, calcScale, join2Polylines, innerProfileToPolygon, importSvg,
   create_polygon, recreate_snapping_points, toD3, mirrorY } from './calc_functions'
 const svgPanZoom = require('svg-pan-zoom')
 const download = require("downloadjs")
@@ -33,10 +33,13 @@ class Draw extends Component {
     toDo:{
       image:false, rotAxis:false, metric:false,
       int_prof:false, out_prof:false, ref_unit:false,
-      maxFill:false, handle_length:false, handle_sec:false
+      maxFill:false, handle_length:false, handle_sec:false, handle_n:false
     },
     handle_volume:0,
-    handle_n:0
+    handle_n:0,
+    metric_value:0,
+    metric_unit:'cm',
+    img_rot:0
   }
   id = 0
   not_id = 0
@@ -470,7 +473,6 @@ class Draw extends Component {
       if(this.vesselVolume){
         this.setState({vessel_volume:calc_vol(this.vesselVolume, this.scale)})
       }
-
     }
   }
 
@@ -531,6 +533,7 @@ class Draw extends Component {
         {
           if(el.id===id){
             el.type = type
+            el.el.setAttribute('type', type)
             return el
           }
           return el
@@ -774,7 +777,7 @@ class Draw extends Component {
       return
     }
     const line_to_mirror = this.state.active_polyline
-    const mirrored_line = mirrorY(line_to_mirror, this.canvas, this.id, this.x, this.y, window.zoom)
+    const mirrored_line = mirrorY(line_to_mirror, this.canvas, this.id, this.x, this.y)
     mirrored_line.stopEditing({code:'Escape'})
     this.globalStopEditingMode()
     this.id++
@@ -782,6 +785,87 @@ class Draw extends Component {
     new_polylines.push(mirrored_line)
     this.setState({active_polyline:mirrored_line, polylines:new_polylines})
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  //                                  IMPORT                                  //
+  //////////////////////////////////////////////////////////////////////////////
+
+  svgImportdHandler(e){
+    var fileToLoad = e.target.files[0]
+    var fileReader = new FileReader();
+    fileReader.onload = function(){
+      //convert string to dom elemetns
+      var template = document.createElement('template');
+      template.innerHTML = fileReader.result;
+      let elements = template.content.childNodes[0].firstChild.children
+      //convert dom elements to Polyline objects
+      let res = importSvg(elements, this.canvas, this.id, this.x, this.y)
+      let new_lines = res[0]
+      this.id = res[1]
+      let img_transform = res[2]
+      let img_name = res[3]
+      if(img_transform){
+        this.bck_image.style.transform = img_transform
+        this.setState(
+          {img_rot:parseFloat(img_transform.replace('rotate(','').replace('deg)'))}
+        )
+      }
+      //// take care of special type lines ////
+      //metric
+      let metric = new_lines.filter(el => el.type === 'metric')
+      if(metric.length > 0){
+        this.metric = metric[0]
+        this.metricForm({ref_unit: true, unit:this.metric.el.dataset.metric_unit,
+          value:parseFloat(this.metric.el.dataset.metric_value)})
+        this.updateToDo('metric', true)
+        this.updateToDo('ref_unit', true)
+        this.metric.el.classList.remove('active')
+      }
+      //rot axis
+      let rotAxis = new_lines.filter(el => el.type === 'center')
+      if(rotAxis.length > 0){
+        this.rotAxis = rotAxis[0]
+        window.r_axis = rotAxis[0].points[0].cx
+        this.updateToDo('rotAxis', true)
+        this.rotAxis.el.classList.remove('active')
+      }
+      //max fill
+      let maxFill = new_lines.filter(el => el.type === 'max_fill')
+      if(maxFill.length > 0){
+        this.maxFill = maxFill[0]
+        window.maxFill = this.maxFill.points[0].cy
+        this.updateToDo('maxFill', true)
+        this.maxFill.el.classList.remove('active')
+      }
+      //add handle number to form and then state
+      new_lines.forEach(function(line){
+        if(line.type==="handle_length"){
+          this.setState({handle_n:parseFloat(line.el.dataset.handle_n)}, ()=> {
+            this.updateToDo('handle_n', true)
+          })
+        }
+      }.bind(this))
+      //save to state
+      this.setState({polylines:new_lines.filter(
+        el => el.type !== 'metric').filter(el => el.type !== 'center').filter(
+          el => el.type !== 'max_fill')
+        }, () => {
+        this.globalStopEditingMode()
+        //simulate esc press
+        let evt = new Event('keyup')
+        evt.code = "Escape"
+        window.dispatchEvent(evt)
+      })
+      let message = 'Upload succeeded'
+      if(img_name){
+        message += `, upload the same image file (${img_name})`
+      }
+      this.addNotification(message)
+    }.bind(this)
+
+    fileReader.readAsText(fileToLoad, "UTF-8");
+  }
+
 
   //////////////////////////////////////////////////////////////////////////////
   //                                 DOWNLOAD                                 //
@@ -792,10 +876,32 @@ class Draw extends Component {
       this.addNotification('No polylines to export')
       return
     }
+
+    //save data to svg polyline in order to reimport them later
+    this.maxFill ? this.maxFill.el.setAttribute('type','max_fill') : //pass
+    this.metric ? this.metric.el.setAttribute('type','metric') : //pass
+    this.rotAxis ? this.rotAxis.el.setAttribute('type','center') : //pass
+
+    this.state.polylines.forEach(function(polyline){
+      if(polyline.type==='handle_length'){
+        polyline.el.dataset.handle_n = this.state.handle_n
+      }
+      //save ref scale data to svg polyline
+      if(this.state.metric_value && this.metric){
+        this.metric.el.dataset.metric_value = this.state.metric_value
+      }
+      if(this.state.metric_unit && this.metric){
+        this.metric.el.dataset.metric_unit = this.state.metric_unit
+      }
+      //save type to svg polyline (import - export)
+      polyline.el.setAttribute('type', polyline.type)
+    }.bind(this))
+
+    //change image info and then download
     let saved_path = this.state.selectedFile
     if(this.state.img_name){
       this.setState({selectedFile:this.state.img_name.replace('href':'xlink:href')}, ()=> {
-        download(this.svg.outerHTML, "dlText.svg", "text/plain");
+        download(this.svg.outerHTML, "myVessel.svg", "text/plain");
         this.setState({selectedFile:saved_path})
       })
     }else{
@@ -887,7 +993,7 @@ class Draw extends Component {
               <div id="actions-title">Actions:</div>
               <div
                 className="interface-button"
-                onClick={this.create_new_polyline.bind(this)}
+                onClick={()=>this.create_new_polyline()}
                 title="Create new line"
                 alt="Create new line"
               >
@@ -951,7 +1057,11 @@ class Draw extends Component {
               >
                 JSON
               </div>
-            </div>
+
+              <div id="actions-title2">Import:</div>
+              <input className="hidden" type="file" accept="image/svg+xml" id="svg-uploader" onChange={this.svgImportdHandler.bind(this)}></input>
+              <label className="interface-button" id="import-file" htmlFor="svg-uploader">SVG</label>
+          </div>
           </section>
 
           <section id="polylines">
@@ -960,7 +1070,7 @@ class Draw extends Component {
                 <div className="slidecontainer">
                  <label htmlFor="myRange">Rotate image</label>
                  <input
-                   type="number" min="0" max="360" defaultValue="0"
+                   type="number" min="0" max="360" defaultValue={this.state.img_rot}
                    className="slider" id="myRange" step="0.01"
                    onChange={this.image_rotate.bind(this)}
                    />
@@ -996,6 +1106,9 @@ class Draw extends Component {
             create_new_polyline={this.create_new_polyline.bind(this)}
             defineMaxFill={this.defineMaxFill.bind(this)}
             nHandleForm={this.nHandleForm.bind(this)}
+            metric_value={this.state.metric_value}
+            metric_unit={this.state.metric_unit}
+            handle_n={this.state.handle_n}
             />
 
           <Measures

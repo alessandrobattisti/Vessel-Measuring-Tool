@@ -308,6 +308,12 @@ circle, rect {
   font-weight: bold;
 }
 
+#import-file {
+  border-top: unset;
+  background: unset;
+  font-size: unset;
+}
+
 .interface-button {
   padding: 5px;
   width: 100%;
@@ -315,9 +321,10 @@ circle, rect {
   cursor: pointer;
   float: left;
   border-bottom: 1px solid lightgray;
+  box-sizing: border-box;
 }
 
-.interface-button:hover {
+.interface-button:hover, #import-file:hover {
   background: rgb(54, 54, 54);
 }
 
