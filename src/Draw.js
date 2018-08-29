@@ -39,7 +39,10 @@ class Draw extends Component {
     handle_n:0,
     metric_value:0,
     metric_unit:'cm',
-    img_rot:0
+    img_rot:0,
+    title:'MyNewVessel',
+    author:'',
+    description:''
   }
   id = 0
   not_id = 0
@@ -797,6 +800,14 @@ class Draw extends Component {
       //convert string to dom elemetns
       var template = document.createElement('template');
       template.innerHTML = fileReader.result;
+      //get basic info from svg
+      let svg = template.content.childNodes[0]
+      this.setState({
+        title:svg.dataset.title,
+        description:svg.dataset.description,
+        author:svg.dataset.author
+      })
+      //get lines
       let elements = template.content.childNodes[0].firstChild.children
       //convert dom elements to Polyline objects
       let res = importSvg(elements, this.canvas, this.id, this.x, this.y)
@@ -901,11 +912,11 @@ class Draw extends Component {
     let saved_path = this.state.selectedFile
     if(this.state.img_name){
       this.setState({selectedFile:this.state.img_name.replace('href':'xlink:href')}, ()=> {
-        download(this.svg.outerHTML, "myVessel.svg", "text/plain");
+        download(this.svg.outerHTML, `${this.state.title}.svg`, "text/plain");
         this.setState({selectedFile:saved_path})
       })
     }else{
-      download(this.svg.outerHTML, "myVessel.svg", "text/plain");
+      download(this.svg.outerHTML, `${this.state.title}.svg`, "text/plain");
     }
   }
 
@@ -931,12 +942,11 @@ class Draw extends Component {
     }.bind(this))
     models.units = makerjs.units.Meter;
     let file = makerjs.exporter.toDXF(models, {units:makerjs.unitType.Meter})
-    download(file, "myVessel.dxf", "text/plain");
+    download(file, `${this.state.title}.dxf`, "text/plain");
   }
 
   download_json(){
-    let title = 'myVessel'
-    let coordinates, author, description = ''
+    let coordinates = ''
 
     let int_prof = this.state.polylines.filter(el=>el.type==='int_prof')
     if(int_prof.length > 0){
@@ -961,13 +971,13 @@ class Draw extends Component {
                       "coordinates": ${coordinates}
                     },
                   "properties": {
-                    "title": "${title}",
-                    "description": "${description}",
-                    "author": "${author}"
+                    "title": "${this.state.title}",
+                    "description": "${this.state.description}",
+                    "author": "${this.state.author}"
                   }
                 }`
     this.addNotification('Export completed')
-    download(json, `${title}.json`, "text/plain");
+    download(json, `${this.state.title}.json`, "text/plain");
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -982,7 +992,13 @@ class Draw extends Component {
 
           <h2>Draw</h2>
           <section id="drawing">
-            <svg id="drawing-canvas" height="500" width="100%" ref={svg => {this.svg = svg}}>
+            <svg
+              id="drawing-canvas" height="500" width="100%"
+              ref={svg => {this.svg = svg}}
+              data-title={this.state.title}
+              data-author={this.state.author}
+              data-description={this.state.description}
+              >
               <g className="svg-pan-zoom_viewport" id="canvas">
                 <image ref={bck_image => {this.bck_image=bck_image}}
                   id="bck-img" href={this.state.selectedFile} x="0" y="0"
@@ -1096,6 +1112,29 @@ class Draw extends Component {
             single left-click to select vertices (in edit and break mode),
             mouse wheel scroll to zoom in and out. Click the listed lines in the Layer section to select a line.
             Press <code>Esc</code> or <code>q</code> to quit editing mode and deselect.
+          </div>
+          <div className="basic-info drawing-info">
+            <div className="input-flex">
+              <label htmlFor="b-info-title">Title:</label>
+              <input type="text" id="b-info-title" name="title"
+                value={this.state.title}
+                onChange={(e)=>this.setState({title:e.target.value})}>
+              </input>
+            </div>
+            <div className="input-flex">
+              <label htmlFor="b-info-title">Author:</label>
+              <input type="text" id="b-info-author" name="author"
+                value={this.state.author}
+                onChange={(e)=>this.setState({author:e.target.value})}>
+              </input>
+            </div>
+            <div className="textArea-flex">
+              <label htmlFor="b-info-title">Description:</label>
+              <textarea type="text" id="b-info-description" name="description"
+                value={this.state.description}
+                onChange={(e)=>this.setState({description:e.target.value})}>
+              </textarea>
+            </div>
           </div>
           <Steps
             toDo={this.state.toDo}

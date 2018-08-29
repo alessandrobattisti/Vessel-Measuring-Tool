@@ -152,7 +152,7 @@ header {
   width: 30%;
 }
 
-input, select, label, button {
+input, select, label, button, textarea {
   border: 1px solid lightgray;
   padding: 5px;
   margin-right: 5px;
@@ -361,13 +361,53 @@ svg {
 }
 
 /*/////////////////////////////////////////////////////////////////////////////*/
-/*/////////////////////////////////   SVG   //////////////////////////////////*/
+/*//////////////////////////////   BASIC INFO   ///////////////////////////////*/
 /*/////////////////////////////////////////////////////////////////////////////*/
 
 .basic-info {
   font-size: 13px;
   color: gray;
   text-align: left;
+}
+
+.drawing-info {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.drawing-info > div {
+  display: flex;
+  margin-top: 10px;
+}
+
+.input-flex {
+  flex: 1;
+}
+
+.textArea-flex {
+  flex: 2;
+}
+
+.drawing-info > div > label {
+  flex: 1;
+}
+
+.drawing-info > div > input,
+.drawing-info > div > textarea {
+  flex: 10;
+}
+
+.drawing-info > div > input,
+.drawing-info > div > label,
+.drawing-info > div > textarea{
+  height: 29px;
+  box-sizing: border-box;
+}
+
+.drawing-info > div > label {
+  border: unset;
+  background: unset;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////*/
