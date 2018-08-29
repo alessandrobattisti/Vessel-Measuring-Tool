@@ -805,11 +805,16 @@ class Draw extends Component {
       template.innerHTML = fileReader.result;
       //get basic info from svg
       let svg = template.content.childNodes[0]
-      this.setState({
-        title:svg.dataset.title,
-        description:svg.dataset.description,
-        author:svg.dataset.author
-      })
+      try {
+        this.setState({
+          title:svg.dataset.title,
+          description:svg.dataset.description,
+          author:svg.dataset.author
+        })
+      }
+      catch(err) {
+        this.addNotification("Import failed. It's possible to import only SVG previously exported by this software.")
+      }
       //get lines
       let elements = template.content.childNodes[0].firstChild.children
       //convert dom elements to Polyline objects
