@@ -232,6 +232,7 @@ function mirrorY(line, canvas, id, x, y){
 		offsetY: y,
 		currentZoom: window.zoom
 	})
+	mirrored.el.setAttribute('type', 'other')
 	line.points.forEach(function(point){
 		let new_x = point.cx - window.r_axis
 		if(new_x <= 0){
@@ -266,7 +267,7 @@ function importSvg(lines, canvas, id, x, y){
 		if(line.localName === 'polyline'){
 			let new_line = new Polyline({
 				points: [],
-				id: id,
+				id: String(id),
 				type: line.getAttribute('type'),
 				selected: true,
 				canvas: canvas,

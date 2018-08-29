@@ -276,6 +276,24 @@ svg {
   /*cursor:pointer;*/
 }
 
+polyline {
+  cursor: pointer;
+}
+
+.no-select {
+  cursor: auto;
+  pointer-events: none;
+}
+
+polyline:hover {
+  stroke: rgb(123, 207, 225) !important;
+}
+
+#metric, #center, #max_fill {
+  cursor: auto!important;
+  pointer-events: none!important;
+}
+
 circle, rect {
   cursor: pointer;
 }

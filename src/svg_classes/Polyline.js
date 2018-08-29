@@ -8,12 +8,13 @@ export default class Poly {
     this.points = obj.points
     this.fill = 'none'
     this.stroke = 'magenta'
-    this.base_size = 5
+    this.base_size = 6
     this.id = obj.id
     this.type = obj.type
     this.el = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
     this.el.classList.add('active')
     this.canvas = obj.canvas
+    this.el.id = this.id
 
     this.x = obj.offsetX
     this.y = obj.offsetY

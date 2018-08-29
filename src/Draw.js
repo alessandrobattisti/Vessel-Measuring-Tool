@@ -22,6 +22,7 @@ class Draw extends Component {
     this.addMaxFill = this.addMaxFill.bind(this)
     this.resizeSvg = this.resizeSvg.bind(this)
     this.unselect_polyline = this.unselect_polyline.bind(this)
+    this.selectList = this.selectList.bind(this)
   }
   state = {
     polylines: [],
@@ -135,13 +136,14 @@ class Draw extends Component {
   //////////////////////////////////////////////////////////////////////////////
 
   create_new_polyline(type = "other"){
+    this.removeClickSelectEvent()
     this.globalStopEditingMode()
 
     this.addCursorPoint()
     const new_polylines = this.state.polylines
     const polyline = new Polyline({
       points: [],
-      id: this.id,
+      id: String(this.id),
       type: type,
       selected: true,
       canvas: this.canvas,
@@ -149,6 +151,7 @@ class Draw extends Component {
       offsetY: this.y,
       currentZoom: this.panZoomTiger.getZoom()
     })
+    //save
     polyline.el.setAttribute('type', type)
     new_polylines.push( polyline )
     this.id++
@@ -159,18 +162,27 @@ class Draw extends Component {
     )
   }
 
-  selectLayer(id){
-    if(this.state.active_polyline){
-      if(this.state.active_polyline.breaking_mode){
-        this.exitBreakLineMode({code:"Escape"})
-      }
+  selectList(e){
+    this.selectLayer(e.target.id)
+  }
+
+  scrollToElement(){
+    let active = document.querySelectorAll('.polyline-active')
+    if(active.length > 0){
+      let topPos = active[0].offsetTop;
+      this.polylines_box.scrollTop = topPos-131;
     }
+  }
+
+  selectLayer(id){
+    this.globalStopEditingMode()
     this.setState({active_polyline: this.getPolylineById(id)},
       ()=> {
         this.state.polylines.forEach(function(poly){
           poly.el.classList.remove('active')
         });
         this.state.active_polyline.el.classList.toggle('active')
+        this.scrollToElement()
       }
     )
   }
@@ -178,8 +190,28 @@ class Draw extends Component {
   //////////////////////////////////////////////////////////////////////////////
   //                                UTILITIES                                 //
   //////////////////////////////////////////////////////////////////////////////
+  id_remove = 0
+  removeClickSelectEvent(){
+    this.id_remove++
+    this.state.polylines.forEach(function(polyline){
+      //add event listener to select on click
+      polyline.el.removeEventListener('click', this.selectList)
+      polyline.el.classList.add('no-select')
+    }.bind(this))
+  }
+  id_add = 0
+  addClickSelectEvent(){
+    this.id_add++
+    this.state.polylines.forEach(function(polyline){
+      //add event listener to select on click
+      polyline.el.addEventListener('click', this.selectList)
+      polyline.el.classList.remove('no-select')
+    }.bind(this))
+  }
 
   unselect_polyline(e){
+    this.addClickSelectEvent()
+
     if( e.code === 'Escape' || e.code === 'KeyQ'){
       if(this.state.active_polyline){
         this.state.active_polyline.el.classList.remove('active')
@@ -213,6 +245,7 @@ class Draw extends Component {
   }
 
   globalStopEditingMode(){
+
     this.state.polylines.forEach(function(poly){
       poly.el.classList.remove('active')
     })
@@ -383,6 +416,7 @@ class Draw extends Component {
   }
 
   defineMaxFill(){
+    this.removeClickSelectEvent()
     this.globalStopEditingMode()
     //remove maxFill if present
     if(this.maxFill){
@@ -413,6 +447,7 @@ class Draw extends Component {
     this.canvas.appendChild(this.maxFill.el)
     this.maxFill.draw()
     //exit editing mode
+    this.addClickSelectEvent()
     this.maxFill.is_editing = false
     this.maxFill.el.classList.remove('active')
     this.canvas.removeEventListener('dblclick', this.addMaxFill)
@@ -442,6 +477,7 @@ class Draw extends Component {
       currentZoom: this.panZoomTiger.getZoom()
     })
     //start editing
+    this.removeClickSelectEvent()
     this.addCursorPoint()
     this.canvas.addEventListener('dblclick', this.addMetric)
     this.metric.stopEditing({code:'Escape'})
@@ -465,6 +501,7 @@ class Draw extends Component {
       //set color
       this.metric.el.classList.remove('active')
       //stop editing
+      this.addClickSelectEvent()
       this.metric.is_editing = false
       this.canvas.removeEventListener('dblclick', this.addMetric)
       this.updateToDo('metric', true)
@@ -483,6 +520,7 @@ class Draw extends Component {
   }
 
   definerotAxis(){
+    this.removeClickSelectEvent()
     this.globalStopEditingMode()
     //remove if already present
     if(this.rotAxis){
@@ -493,7 +531,7 @@ class Draw extends Component {
     //create rotation axis polyline
     this.rotAxis = new Polyline({
       points: [],
-      id: this.id,
+      id: 'center',
       type: 'center',
       selected: true,
       canvas: this.canvas,
@@ -513,6 +551,7 @@ class Draw extends Component {
     this.canvas.appendChild(this.rotAxis.el)
     this.rotAxis.draw()
     //exit editing mode
+    this.addClickSelectEvent()
     this.rotAxis.is_editing = false
     this.rotAxis.el.classList.remove('active')
     this.canvas.removeEventListener('dblclick', this.addRotAxis)
@@ -575,6 +614,7 @@ class Draw extends Component {
   }
 
   edit_line(){
+    this.removeClickSelectEvent()
     this.globalStopEditingMode()
     if(!this.state.active_polyline){
       this.addNotification("No line selected")
@@ -588,6 +628,7 @@ class Draw extends Component {
   //////////////////////////////////////////////////////////////////////////////
 
   enterBreakLineMode(){
+    this.removeClickSelectEvent()
     this.globalStopEditingMode()
     //check if breaking selected line is possible
     if(!this.state.active_polyline){
@@ -640,7 +681,7 @@ class Draw extends Component {
     //create a new polyline
     let polyline = new Polyline({
       points: [],
-      id: this.id,
+      id: String(this.id),
       type: 'other',
       selected: false,
       canvas: this.canvas,
@@ -662,7 +703,7 @@ class Draw extends Component {
         //create a new polyline with starting point the breaking point
         polyline = new Polyline({
           points: [],
-          id: this.id,
+          id: String(this.id),
           type: 'other',
           selected: true,
           canvas: this.canvas,
@@ -685,6 +726,12 @@ class Draw extends Component {
     this.setState(
       { polylines: new_polylines.filter(el=>el.id!==this.state.active_polyline.id),
         active_polyline: polyline
+      }, () => {
+        this.globalStopEditingMode()
+        this.addClickSelectEvent()
+        let evt = new Event('keyup')
+        evt.code = 'Escape'
+        window.dispatchEvent(evt)
       }
     )
   }
@@ -789,7 +836,9 @@ class Draw extends Component {
     this.id++
     let new_polylines = this.state.polylines
     new_polylines.push(mirrored_line)
-    this.setState({active_polyline:mirrored_line, polylines:new_polylines})
+    this.setState({active_polyline:mirrored_line, polylines:new_polylines}, ()=>{
+      this.addClickSelectEvent()
+    })
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -839,6 +888,7 @@ class Draw extends Component {
         this.updateToDo('metric', true)
         this.updateToDo('ref_unit', true)
         this.metric.el.classList.remove('active')
+        this.metric.id = 'metric'
       }
       //rot axis
       let rotAxis = new_lines.filter(el => el.type === 'center')
@@ -847,6 +897,7 @@ class Draw extends Component {
         window.r_axis = rotAxis[0].points[0].cx
         this.updateToDo('rotAxis', true)
         this.rotAxis.el.classList.remove('active')
+        this.rotAxis.id = 'center'
       }
       //max fill
       let maxFill = new_lines.filter(el => el.type === 'max_fill')
@@ -855,6 +906,7 @@ class Draw extends Component {
         window.maxFill = this.maxFill.points[0].cy
         this.updateToDo('maxFill', true)
         this.maxFill.el.classList.remove('active')
+        this.maxFill.id = 'max_fill'
       }
       //add handle number to form and then state
       new_lines.forEach(function(line){
@@ -873,6 +925,11 @@ class Draw extends Component {
         //simulate esc press
         let evt = new Event('keyup')
         evt.code = "Escape"
+        //event listener to select on click
+        this.state.polylines.forEach(function(polyline){
+          polyline.el.addEventListener('click', this.selectList)
+        }.bind(this))
+
         window.dispatchEvent(evt)
       })
       let message = 'Upload succeeded'
@@ -944,6 +1001,7 @@ class Draw extends Component {
       let points = polyline.el.getAttribute('points');
       let closed = false; //true for SVG polygon, false for SVG polyline
       let model = makerjs.model.mirror(new makerjs.models.ConnectTheDots(closed, points), false, true);
+      model.layer = polyline.type
       model = makerjs.model.scale(model, this.scale/10)
       models.models[`my-${x}-line`] = model
       x++
@@ -1088,7 +1146,7 @@ class Draw extends Component {
           </div>
           </section>
 
-          <section id="polylines">
+          <section id="polylines" ref={polylines_box => {this.polylines_box = polylines_box}}>
             <div id="layer-title">Layers:</div>
               {this.state.toDo.image && <div id="image-layer" className="polyline-layer">
                 <div className="slidecontainer">
