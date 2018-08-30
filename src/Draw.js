@@ -196,18 +196,15 @@ class Draw extends Component {
   //                                UTILITIES                                 //
   //////////////////////////////////////////////////////////////////////////////
 
-  id_remove = 0
   removeClickSelectEvent(){
-    this.id_remove++
     this.state.polylines.forEach(function(polyline){
       //add event listener to select on click
       polyline.el.removeEventListener('click', this.selectList)
       polyline.el.classList.add('no-select')
     }.bind(this))
   }
-  id_add = 0
+
   addClickSelectEvent(){
-    this.id_add++
     this.state.polylines.forEach(function(polyline){
       //add event listener to select on click
       polyline.el.addEventListener('click', this.selectList)
@@ -252,6 +249,11 @@ class Draw extends Component {
     this.state.polylines.forEach(function(poly){
       poly.el.classList.remove('active')
     })
+    this.state.polylines.forEach(p => {
+      if(p.editing){
+        p.stopEditingPoints({code:'Escape'})
+      }
+    })
     if(this.state.active_polyline){
       //exit all possible editing states of active polyline
       if(this.state.active_polyline.editing){
@@ -283,6 +285,7 @@ class Draw extends Component {
       this.canvas.removeChild(this.rotAxis.el)
       this.rotAxis = null;
     }
+    this.addClickSelectEvent()
   }
 
   addNotification(message){
@@ -647,16 +650,13 @@ class Draw extends Component {
     )
   }
 
-  delete_line(){
+  delete_line(id){
     this.globalStopEditingMode()
-    if(!this.state.active_polyline){
-      this.addNotification("No line selected")
-      return
-    }
-    this.canvas.removeChild(this.state.active_polyline.el)
+    let p = this.getPolylineById(id)
+    this.canvas.removeChild(p.el)
     this.setState({
       polylines:this.state.polylines.filter(
-        el => el.id !== this.state.active_polyline.id),
+        el => el.id !== p.id),
         active_polyline: undefined
       }, ()=> {
         this.checkProfile();
@@ -665,14 +665,11 @@ class Draw extends Component {
     )
   }
 
-  edit_line(){
-    this.removeClickSelectEvent()
+  edit_line(id){
     this.globalStopEditingMode()
-    if(!this.state.active_polyline){
-      this.addNotification("No line selected")
-      return
-    }
-    this.state.active_polyline.editLine()
+    this.removeClickSelectEvent()
+    let p = this.getPolylineById(id)
+    p.editLine()
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -896,6 +893,35 @@ class Draw extends Component {
   }
 
   //////////////////////////////////////////////////////////////////////////////
+  //                                MOVE LAYERS                               //
+  //////////////////////////////////////////////////////////////////////////////
+  layerMove(dir){
+    let polylines = this.state.polylines
+    //get initial position
+    let initial_pos, to, from;
+    polylines.forEach((p, key) => {if(p.id===this.state.active_polyline.id){initial_pos=key}})
+    //return if move is impossible
+    if((initial_pos===0 && dir==='up')|| (initial_pos === this.state.polylines.length-1 && dir!=='up')){
+      return
+    }
+    //move layer
+    to = parseInt(initial_pos, 10)
+    if(dir==='up'){
+      from = to-1
+    }else{
+      from = to+1
+    }
+    polylines.splice(to, 0, polylines.splice(from, 1)[0]);
+    this.setState({polylines:polylines}, ()=>{
+      //move svg el
+      polylines.forEach(p=>{
+        this.canvas.removeChild(p.el)
+        this.canvas.appendChild(p.el)
+      })
+    })
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
   //                                  IMPORT                                  //
   //////////////////////////////////////////////////////////////////////////////
 
@@ -908,7 +934,6 @@ class Draw extends Component {
       template.innerHTML = fileReader.result;
       //get basic info from svg
       let svg = template.content.childNodes[0]
-      console.log(svg.dataset.vessel_specific_weight ? parseFloat(svg.dataset.vessel_specific_weight) : 2)
       try {
         this.setState({
           title:svg.dataset.title,
@@ -1148,27 +1173,27 @@ class Draw extends Component {
               </div>
               <div
                 className="interface-button"
-                onClick={this.delete_line.bind(this)}
-                title="Delete selected line"
-                alt="Delete selected line"
-                >
-                Delete
-              </div>
-              <div
-                className="interface-button"
-                onClick={this.edit_line.bind(this)}
-                title="Edit selected line"
-                alt="Edit selected line"
-                >
-                Edit
-              </div>
-              <div
-                className="interface-button"
                 onClick={this.mirrorY.bind(this)}
                 title="Edit selected line"
                 alt="Edit selected line"
                 >
                 Mirror Y
+              </div>
+              <div
+                className="interface-button"
+                onClick={() => this.layerMove('up')}
+                title="Raise selected layer one step"
+                alt="Raise selected layer one step"
+              >
+                Raise
+              </div>
+              <div
+                className="interface-button"
+                onClick={() => this.layerMove('down')}
+                title="Lower selected layer one step"
+                alt="Lower selected layer one step"
+              >
+                Lower
               </div>
 
               <div id="actions-title2">Export:</div>

@@ -75,3 +75,47 @@ changeType(type, id){
     })
   })
 }
+
+<div
+  className="interface-button"
+  onClick={this.delete_line.bind(this)}
+  title="Delete selected line"
+  alt="Delete selected line"
+  >
+  Delete
+</div>
+<div
+  className="interface-button"
+  onClick={this.edit_line.bind(this)}
+  title="Edit selected line"
+  alt="Edit selected line"
+  >
+  Edit
+</div>
+delete_line(){
+  this.globalStopEditingMode()
+  if(!this.state.active_polyline){
+    this.addNotification("No line selected")
+    return
+  }
+  this.canvas.removeChild(this.state.active_polyline.el)
+  this.setState({
+    polylines:this.state.polylines.filter(
+      el => el.id !== this.state.active_polyline.id),
+      active_polyline: undefined
+    }, ()=> {
+      this.checkProfile();
+      recreate_snapping_points(this.state.polylines)
+    }
+  )
+}
+
+edit_line(){
+  this.removeClickSelectEvent()
+  this.globalStopEditingMode()
+  if(!this.state.active_polyline){
+    this.addNotification("No line selected")
+    return
+  }
+  this.state.active_polyline.editLine()
+}

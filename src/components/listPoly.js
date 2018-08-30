@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import SimpleLineIcon from 'react-simple-line-icons';
+
 
 export default class ListPoly extends Component {
   state = {
@@ -56,7 +58,24 @@ export default class ListPoly extends Component {
             )}
           </select>
         </div>
-        <div><span></span></div>
+      {/*   <div className="icon-edit-layer"><SimpleLineIcon size="Small" name="arrow-up" onClick={()=>this.props.layerMove('up', this.props.id)}/></div>
+        <div className="icon-edit-layer"><SimpleLineIcon size="Small" name="arrow-down" onClick={()=>this.props.layerMove('down', this.props.id)}/></div>*/}
+        <div className="edit-delete">
+          <div className="icon-edit-layer"
+            onClick={(e)=>{
+              e.stopPropagation();
+              this.props.edit_line(this.props.id)
+            }}>
+            <SimpleLineIcon size="Small" name="pencil"/>
+          </div>
+          <div className="icon-edit-layer"
+            onClick={(e)=>{
+              e.stopPropagation();
+              this.props.delete_line(this.props.id)
+            }}>
+            <SimpleLineIcon size="Small" name="trash"/>
+          </div>
+        </div>
       </div>
     )
   }
