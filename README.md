@@ -17,8 +17,7 @@ You can watch this youtube video that show how to use this app. If you have prob
 - you should be able to use the webapp at `http://localhost:3000`
 
 ***
-*You can download and use this webapp even without an internet connection, after you've downloded the source code
-you can open the `index.html` file in the `build` folder with any modern browser and start measuring your vessels.*
+*You can download and use this webapp even without an internet connection, download the VMT.zip file from [here](https://github.com/alessandrobattisti/Vessel-Measuring-Tool/releases/latest/) extract it and open the `index.html` file in the `build` folder with any modern browser and start measuring your vessels.*
 ***
 
 ### Limitations
