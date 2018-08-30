@@ -3,7 +3,6 @@ import './App.css';
 import './responsive.css';
 import { Route, Switch, Link} from 'react-router-dom'
 import Draw from './Draw'
-
 class App extends Component {
 
   render() {

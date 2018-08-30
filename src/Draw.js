@@ -32,8 +32,8 @@ class Draw extends Component {
     img_h: 1000,
     notification:{id:-1,message:''},
     toDo:{
-      image:false, rotAxis:false, metric:false,
-      int_prof:false, out_prof:false, ref_unit:false,
+      image:false, rotAxis:false, metric:false, out_prof:false,
+      int_prof:false, out_prof2:false, ref_unit:false, int_prof2:false,
       maxFill:false, handle_length:false, handle_sec:false, handle_n:false
     },
     handle_volume:0,
@@ -43,7 +43,11 @@ class Draw extends Component {
     img_rot:0,
     title:'MyNewVessel',
     author:'',
-    description:''
+    description:'',
+    vessel_volume:null,
+    vessel_volume2:null,
+    content_volume:null,
+    content_volume2:null,
   }
   id = 0
   not_id = 0
@@ -190,6 +194,7 @@ class Draw extends Component {
   //////////////////////////////////////////////////////////////////////////////
   //                                UTILITIES                                 //
   //////////////////////////////////////////////////////////////////////////////
+
   id_remove = 0
   removeClickSelectEvent(){
     this.id_remove++
@@ -226,10 +231,7 @@ class Draw extends Component {
       this.setState({active_polyline:undefined})
       recreate_snapping_points(this.state.polylines)
 
-      this.checkProfile('int_prof')
-      this.checkProfile('out_prof')
-      this.checkProfile('handle_length');
-      this.checkProfile('handle_sec');
+      this.checkProfile()
 
       if(this.new_point.added){
         this.removeCursorPoint()
@@ -310,32 +312,49 @@ class Draw extends Component {
     this.setState({toDo})
   }
 
-  checkProfile(type){
-    const poly1 = this.state.polylines.filter(el => el.type===type)
-    if(poly1.length===0){
-      this.updateToDo(type, false)
-      if(type==='int_prof'){
-        if(this.inner_poly){
-          this.canvas.removeChild(this.inner_poly)
-          this.inner_poly = null
-          this.setState({vessel_capacity:null})
+  checkProfile(){
+    const types = ['int_prof', 'out_prof', 'handle_length', 'handle_sec', 'int_prof2', 'out_prof2']
+    types.forEach(function(type){
+      const poly1 = this.state.polylines.filter(el => el.type===type)
+      if(poly1.length===0){
+        this.updateToDo(type, false)
+        if(type==='int_prof'){
+          if(this.inner_poly){
+            this.canvas.removeChild(this.inner_poly)
+            this.inner_poly = null
+            this.setState({content_volume:null})
+          }
+        }
+        if(type==='out_prof'){
+          if(this.vessel_poly){
+            this.canvas.removeChild(this.vessel_poly)
+            this.vessel_poly = null
+            this.setState({vessel_volume:null})
+          }
         }
       }
-      if(this.vessel_poly){
-        this.canvas.removeChild(this.vessel_poly)
-        this.vessel_poly = null
-        this.setState({vessel_volume:null})
+      else if(poly1.length===1){
+        this.updateToDo(type, true)
       }
-    }
-    else if(poly1.length===1){
-      this.updateToDo(type, true)
-    }
-    else{
-      this.updateToDo(type, false)
-      let profile = type === 'int_prof' ? 'internal profile' : 'outer profile'
-
-      this.addNotification(`There should be only one ${profile}`)
-    }
+      else{
+        this.updateToDo(type, false)
+        let profile;
+        if(type==='handle_length'){ profile = 'handle length' }
+        if(type==='handle_sec'){ profile = 'handle section' }
+        if(type==='int_prof'){ profile = 'inner profile' }
+        if(type==='out_prof'){ profile = 'outer profile' }
+        if(type==='int_prof2'){ profile = '2nd inner profile' }
+        if(type==='out_prof2'){ profile = '2nd outer profile' }
+        this.addNotification(`There should be only one ${profile}`)
+      }
+    }.bind(this))
+    //delete volume if line has been removed
+    if(this.state.polylines.filter(el => el.type==='int_prof').length===0){ this.setState({content_volume:null, vessel_volume:null}) }
+    if(this.state.polylines.filter(el => el.type==='out_prof').length===0){ this.setState({vessel_volume:null}) }
+    if(this.state.polylines.filter(el => el.type==='int_prof2').length===0){ this.setState({content_volume2:null, vessel_volume2:null}) }
+    if(this.state.polylines.filter(el => el.type==='out_prof2').length===0){ this.setState({vessel_volume2:null}) }
+    if(this.state.polylines.filter(el => el.type==='handle_length').length===0){ this.setState({handle_volume:null}) }
+    if(this.state.polylines.filter(el => el.type==='handle_sec').length===0){ this.setState({handle_volume:null}) }
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -362,7 +381,24 @@ class Draw extends Component {
     this.vessel_poly = create_polygon(this.vesselVolume, 'rgba(170, 170, 170, 0.6)')
     const volume = calc_vol(this.vesselVolume, this.scale)
     this.setState({vessel_volume:volume})
-    this.canvas.appendChild(this.vessel_poly)
+    this.canvas.insertBefore(this.vessel_poly, this.bck_image.nextSibling) //insert after image
+
+    //calc 2nd volume if present
+    const poly2a = this.state.polylines.filter(el => el.type==='int_prof2')[0]
+    const poly2b = this.state.polylines.filter(el => el.type==='out_prof2')[0]
+    if(this.vessel_poly2){ this.canvas.removeChild(this.vessel_poly2); this.vessel_poly2=null }
+    if(!poly2a || !poly2b){
+      if(this.vessel_poly2){ this.canvas.removeChild(this.vessel_poly2); this.vessel_poly2=null }
+      this.setState({vessel_volume2:null})
+      return
+    }
+    this.vesselVolume2 = join2Polylines(poly2a, poly2b)
+    if(!this.vesselVolume){return}
+    this.vessel_poly2 = create_polygon(this.vesselVolume2, 'rgba(100, 100, 100, 0.6)')
+    const volume2 = calc_vol(this.vesselVolume2, this.scale)
+    this.setState({vessel_volume2:volume2})
+    this.canvas.insertBefore(this.vessel_poly2, this.bck_image.nextSibling) //insert after image
+
   }
 
   create_inner_polygon(){
@@ -382,11 +418,24 @@ class Draw extends Component {
 
     if(this.scale){
       const volume = calc_vol(this.innerPolygon, this.scale)
-      this.setState({vessel_capacity:volume})
+      this.setState({content_volume:volume})
     }else{
       this.addNotification('Can\'t measure, define scale first')
     }
-    this.canvas.appendChild(this.inner_poly)
+    this.canvas.insertBefore(this.inner_poly, this.bck_image.nextSibling) //insert after image
+
+    //calc 2nd volume if present
+    let poly2 = this.state.polylines.filter(el => el.type==='int_prof2')
+    if(this.inner_poly2){ this.canvas.removeChild(this.inner_poly2); this.inner_poly2=null }
+    if(poly2.length>0){
+      this.innerPolygon2 = innerProfileToPolygon(poly2[0].points.slice())
+      this.inner_poly2 = create_polygon(this.innerPolygon2, 'rgba(210, 78, 78, 0.3)')
+      this.canvas.insertBefore(this.inner_poly2, this.bck_image.nextSibling) //insert after image
+      const volume2 = calc_vol(this.innerPolygon2, this.scale)
+      this.setState({content_volume2:volume2})
+    }else{
+      this.setState({content_volume2:null})
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -400,18 +449,32 @@ class Draw extends Component {
         if(this.metric && this.metric.points.length===2){
           this.scale = calcScale(this.metric, this.state.metric_value, this.state.metric_unit)
           this.metric.editing = false
-          //update volume info when metric info are updated
-          if(this.innerPolygon){
-            this.setState({vessel_capacity:calc_vol(this.innerPolygon, this.scale)})
-          }
-          if(this.vesselVolume){
-            this.setState({vessel_volume:calc_vol(this.vesselVolume, this.scale)})
-          }
+          this.updateVolumeInfo()
         }
       })
     }else{
       this.updateToDo('ref_unit', false)
       this.scale = null
+    }
+  }
+
+  updateVolumeInfo(){
+    //update volume info when metric info are updated
+    if(this.innerPolygon){
+      this.setState({content_volume:calc_vol(this.innerPolygon, this.scale)})
+    }
+    if(this.vesselVolume){
+      this.setState({vessel_volume:calc_vol(this.vesselVolume, this.scale)})
+    }
+    if(this.innerPolygon2){
+      this.setState({content_volume2:calc_vol(this.innerPolygon2, this.scale)})
+    }
+    if(this.vesselVolume2){
+        this.setState({vessel_volume2:calc_vol(this.vesselVolume2, this.scale)})
+    }
+    let handle_length = this.state.polylines.filter(el => el.type === 'handle_length')
+    if(handle_length.length === 1){
+      this.handleVolume()
     }
   }
 
@@ -509,13 +572,7 @@ class Draw extends Component {
       if(this.state.metric_value && this.state.metric_unit){
         this.scale = calcScale(this.metric, this.state.metric_value, this.state.metric_unit)
       }
-      //update volume info when metric info are updated
-      if(this.innerPolygon){
-        this.setState({vessel_capacity:calc_vol(this.innerPolygon, this.scale)})
-      }
-      if(this.vesselVolume){
-        this.setState({vessel_volume:calc_vol(this.vesselVolume, this.scale)})
-      }
+      this.updateVolumeInfo()
     }
   }
 
@@ -584,10 +641,7 @@ class Draw extends Component {
           return el
         })
       }, ()=> {
-        this.checkProfile('int_prof');
-        this.checkProfile('out_prof');
-        this.checkProfile('handle_length');
-        this.checkProfile('handle_sec');
+        this.checkProfile();
       }
     )
   }
@@ -604,10 +658,7 @@ class Draw extends Component {
         el => el.id !== this.state.active_polyline.id),
         active_polyline: undefined
       }, ()=> {
-        this.checkProfile('int_prof');
-        this.checkProfile('out_prof');
-        this.checkProfile('handle_length');
-        this.checkProfile('handle_sec');
+        this.checkProfile();
         recreate_snapping_points(this.state.polylines)
       }
     )
@@ -1219,7 +1270,9 @@ class Draw extends Component {
           <Measures
             toDo={this.state.toDo}
             vessel_volume={this.state.vessel_volume}
-            content_volume={this.state.vessel_capacity}
+            vessel_volume2={this.state.vessel_volume2}
+            content_volume={this.state.content_volume}
+            content_volume2={this.state.content_volume2}
             joinIntExt={this.joinIntExt.bind(this)}
             create_inner_polygon={this.create_inner_polygon.bind(this)}
             handle_volume={this.state.handle_volume}
@@ -1232,61 +1285,3 @@ class Draw extends Component {
   }
 
   export default Draw;
-
-  //get point coordinates from event
-  //get_point(e){
-  //  const matrix = this.canvas.transform.baseVal[0].matrix
-  //  const newPoint =  [((e.pageX-matrix.e-this.x)/matrix.a),((e.pageY-matrix.f-this.y)/matrix.a)]
-  //  return newPoint
-  //}
-  //
-  //
-  //<Measures />
-  //joinTwoPolylines(poly1, poly2){
-  //  const new_poly = join2Polylines(poly1, poly2)
-  //
-  //  if(!new_poly){
-  //    this.addNotification("Not joinable")
-  //    return
-  //  }
-  //  return joined_poly
-  //
-  //  //const joined_poly = new Polyline({
-  //  //  points: cleanedPoly(new_poly),
-  //  //  id: this.id,
-  //  //  type: poly1.type,
-  //  //  selected: true,
-  //  //  canvas: this.canvas,
-  //  //  offsetX: this.x,
-  //  //  offsetY: this.y,
-  //  //  currentZoom: this.panZoomTiger.getZoom()
-  //  //})
-  //  //joined_poly.stopEditing({code:'Escape'})
-  //  //this.canvas.removeChild(joined_poly.el)
-  //  //this.id++
-  //
-  //  //this.canvas.removeChild(poly1.el)
-  //  //this.canvas.removeChild(poly2.el)
-  //  //this.canvas.appendChild(joined_poly.el)
-  //  //joined_poly.draw()
-  ////
-  //  //let new_polylines = this.state.polylines.filter(el => el.id!==poly1.id && el.id !==poly2.id )
-  //  //new_polylines.push(joined_poly)
-  //  //this.addNotification(message)
-  //  //this.setState(
-  //  //  { polylines: new_polylines,
-  //  //    notification:{ id:this.not_id, message: message },
-  //  //    active_polyline: joined_poly
-  //  //  }
-  //  //)
-  //  //this.not_id++
-  //}
-  //joinTwoLines(){
-  //  //TODO
-  //  this.addNotification("Select first line")
-  //}
-  //<div
-  //  className="interface-button"
-  //  onClick={this.joinTwoLines.bind(this)}>
-  //  Join 2 lines
-  //</div>

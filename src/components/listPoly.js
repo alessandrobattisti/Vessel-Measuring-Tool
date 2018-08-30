@@ -6,8 +6,8 @@ export default class ListPoly extends Component {
       {val: 'other', text: 'Other'},
       {val: 'int_prof', text: 'Inner profile'},
       {val: 'out_prof', text: 'Outer profile'},
-      {val: '2_int_prof', text: '2nd Inner profile'},
-      {val: '2_out_prof', text: '2nd Outer profile'},
+      {val: 'int_prof2', text: '2nd Inner profile'},
+      {val: 'out_prof2', text: '2nd Outer profile'},
       {val: 'handle_length', text: 'Handle length'},
       {val: 'handle_sec', text: 'Handle section'},
       {val: 'handle_pro', text: 'Handle profile'},
@@ -40,7 +40,10 @@ export default class ListPoly extends Component {
         onClick={()=>this.props.selectLayer(this.props.id)}
         >
         <div>
-          <select id="select-type" defaultValue={this.props.type} onClick={(e)=>e.stopPropagation()} onChange={this.typeChange.bind(this)} ref={type => this.type = type}>
+          <select id="select-type" value={this.props.type}
+            onClick={(e)=>e.stopPropagation()}
+            onChange={this.typeChange.bind(this)}
+            ref={type => this.type = type}>
             {this.state.types.map(el =>
               <option value={el.val} key={el.val}>{el.text}</option>
             )}

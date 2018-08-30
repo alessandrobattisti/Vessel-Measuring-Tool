@@ -447,7 +447,6 @@ svg {
   font-weight: bold;
   cursor: pointer;
   font-size: 16px;
-  margin-right: 10px;
 }
 
 .interface-button2:hover {
@@ -480,9 +479,10 @@ svg {
 
 .measures{
   width: 60%;
-  margin-top: 10px;
+  margin-top: 5px;
   text-align: left;
   font-weight: bold;
+  padding-left: 10px;
 }
 
 #no-calc {
