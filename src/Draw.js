@@ -8,7 +8,7 @@ import Notification from './components/Notification'
 import Steps from './components/Steps'
 import Measures from './components/Measures'
 import { calc_vol, calcScale, join2Polylines, innerProfileToPolygon, importSvg,
-  create_polygon, recreate_snapping_points, toD3, mirrorY } from './calc_functions'
+  create_polygon, recreate_snapping_points, toD3, mirrorY, degreeToMatrix } from './calc_functions'
 const svgPanZoom = require('svg-pan-zoom')
 const download = require("downloadjs")
 
@@ -378,7 +378,7 @@ class Draw extends Component {
     if(this.vessel_poly){
       this.canvas.removeChild(this.vessel_poly)
     }
-    this.vessel_poly = create_polygon(this.vesselVolume, 'rgba(170, 170, 170, 0.6)')
+    this.vessel_poly = create_polygon(this.vesselVolume, '#aaaaaa')
     const volume = calc_vol(this.vesselVolume, this.scale)
     this.setState({vessel_volume:volume})
     this.canvas.insertBefore(this.vessel_poly, this.bck_image.nextSibling) //insert after image
@@ -394,7 +394,7 @@ class Draw extends Component {
     }
     this.vesselVolume2 = join2Polylines(poly2a, poly2b)
     if(!this.vesselVolume){return}
-    this.vessel_poly2 = create_polygon(this.vesselVolume2, 'rgba(100, 100, 100, 0.6)')
+    this.vessel_poly2 = create_polygon(this.vesselVolume2, '#646464')
     const volume2 = calc_vol(this.vesselVolume2, this.scale)
     this.setState({vessel_volume2:volume2})
     this.canvas.insertBefore(this.vessel_poly2, this.bck_image.nextSibling) //insert after image
@@ -414,7 +414,7 @@ class Draw extends Component {
     //define inner polygon points based on inner profile and rotation axis
     this.innerPolygon = innerProfileToPolygon(poly[0].points.slice())
     //create svg polygon
-    this.inner_poly = create_polygon(this.innerPolygon, 'rgba(210, 204, 78, 0.28)')
+    this.inner_poly = create_polygon(this.innerPolygon, '#d2cc4e')
 
     if(this.scale){
       const volume = calc_vol(this.innerPolygon, this.scale)
@@ -429,7 +429,7 @@ class Draw extends Component {
     if(this.inner_poly2){ this.canvas.removeChild(this.inner_poly2); this.inner_poly2=null }
     if(poly2.length>0){
       this.innerPolygon2 = innerProfileToPolygon(poly2[0].points.slice())
-      this.inner_poly2 = create_polygon(this.innerPolygon2, 'rgba(210, 78, 78, 0.3)')
+      this.inner_poly2 = create_polygon(this.innerPolygon2, '#d24e4e')
       this.canvas.insertBefore(this.inner_poly2, this.bck_image.nextSibling) //insert after image
       const volume2 = calc_vol(this.innerPolygon2, this.scale)
       this.setState({content_volume2:volume2})
@@ -792,7 +792,9 @@ class Draw extends Component {
   //////////////////////////////////////////////////////////////////////////////
 
   image_rotate(e){
-    this.bck_image.style.transform = `rotate(${e.target.value}deg)`
+    this.bck_image.style.transform = degreeToMatrix(e.target.value)
+    this.bck_image.dataset.rotation = e.target.value
+    this.bck_image.setAttribute('transform', degreeToMatrix(e.target.value))
   }
 
   fileChangedHandler(e){
@@ -924,10 +926,10 @@ class Draw extends Component {
       let img_transform = res[2]
       let img_name = res[3]
       if(img_transform){
-        this.bck_image.style.transform = img_transform
         this.setState(
-          {img_rot:parseFloat(img_transform.replace('rotate(','').replace('deg)'))}
+          {img_rot:parseFloat(img_transform)}
         )
+        this.bck_image.style.transform = degreeToMatrix(parseFloat(img_transform))
       }
       //// take care of special type lines ////
       //metric
@@ -1027,7 +1029,7 @@ class Draw extends Component {
     //change image info and then download
     let saved_path = this.state.selectedFile
     if(this.state.img_name){
-      this.setState({selectedFile:this.state.img_name.replace('href':'xlink:href')}, ()=> {
+      this.setState({selectedFile:this.state.img_name}, ()=> {
         download(this.svg.outerHTML, `${this.state.title}.svg`, "text/plain");
         this.setState({selectedFile:saved_path})
       })
@@ -1118,7 +1120,7 @@ class Draw extends Component {
               >
               <g className="svg-pan-zoom_viewport" id="canvas">
                 <image ref={bck_image => {this.bck_image=bck_image}}
-                  id="bck-img" href={this.state.selectedFile} x="0" y="0"
+                  id="bck-img" xlinkHref={this.state.selectedFile} x="0" y="0"
                   height={this.state.img_h} width={this.state.img_w}/>
               </g>
             </svg>

@@ -125,16 +125,16 @@ export default class Poly {
   add_point(e){
     let new_point = this.get_point(e)
     if(this.type==='max_fill'){
-      let point = [-1000000, new_point[1]]
+      let point = [-100000, new_point[1]]
       this.appendPoint(point)
-      point = [1000000, new_point[1]]
+      point = [100000, new_point[1]]
       this.appendPoint(point)
       return
     }
     if(this.type==='center'){
-      let point = [new_point[0], -1000000]
+      let point = [new_point[0], -100000]
       this.appendPoint(point)
-      point = [new_point[0], 1000000]
+      point = [new_point[0], 100000]
       this.appendPoint(point)
       return
     }

@@ -148,7 +148,7 @@ function innerProfileToPolygon(old_poly) {
     end = poly[poly.length - 1]
     end.cx = intersect(
       end.cx, end.cy, poly[poly.length-2].cx, poly[poly.length-2].cy,
-      -10000000, window.maxFill, 10000000, window.maxFill
+      -100000, window.maxFill, 1000000, window.maxFill
     ).x
     end.cy = window.maxFill
     new_end.cy = window.maxFill
@@ -180,6 +180,7 @@ function create_polygon(poly, color) {
   let new_poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
   new_poly.setAttribute('points', str)
   new_poly.style.fill = color
+	new_poly.style.fillOpacity = 0.25
   new_poly.style.strokeWidth = '0'
   return new_poly
 }
@@ -297,13 +298,26 @@ function importSvg(lines, canvas, id, x, y){
 			new_lines.push(new_line)
 		}else if(line.localName === 'image'){
 			img_name = line.href.baseVal
-			if(line.style.transform){
-				img_transform = line.style.transform
-			}
+			img_transform = line.dataset.rotation
 		}
 	})
 
 	return [new_lines, id, img_transform, img_name]
+}
+
+function degreeToMatrix(deg){
+	//http://www.boogdesign.com/examples/transforms/matrix-calculator.html
+	const deg2radians = Math.PI * 2 / 360;
+	const rad = deg * deg2radians ;
+	const costheta = Math.cos(rad);
+	const sintheta = Math.sin(rad);
+
+	const a = parseFloat(costheta).toFixed(8);
+	const c = parseFloat(-sintheta).toFixed(8);
+	const b = parseFloat(sintheta).toFixed(8);
+	const d = parseFloat(costheta).toFixed(8);
+
+	return "matrix(" + a + ", " + b + ", " + c + ", " + d + ", 0, 0)"
 }
 
 export {
@@ -319,5 +333,6 @@ export {
   innerProfileToPolygon,
 	polyPointsToPathData,
 	mirrorY,
-	importSvg
+	importSvg,
+	degreeToMatrix
 }
