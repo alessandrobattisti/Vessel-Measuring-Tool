@@ -48,6 +48,7 @@ class Draw extends Component {
     vessel_volume2:null,
     content_volume:null,
     content_volume2:null,
+    vessel_specific_weight:2
   }
   id = 0
   not_id = 0
@@ -907,11 +908,13 @@ class Draw extends Component {
       template.innerHTML = fileReader.result;
       //get basic info from svg
       let svg = template.content.childNodes[0]
+      console.log(svg.dataset.vessel_specific_weight ? parseFloat(svg.dataset.vessel_specific_weight) : 2)
       try {
         this.setState({
           title:svg.dataset.title,
           description:svg.dataset.description,
-          author:svg.dataset.author
+          author:svg.dataset.author,
+          vessel_specific_weight:svg.dataset.vessel_specific_weight ? parseFloat(svg.dataset.vessel_specific_weight) : 2
         })
       }
       catch(err) {
@@ -1117,6 +1120,7 @@ class Draw extends Component {
               data-title={this.state.title}
               data-author={this.state.author}
               data-description={this.state.description}
+              data-vessel_specific_weight={this.state.vessel_specific_weight}
               >
               <g className="svg-pan-zoom_viewport" id="canvas">
                 <image ref={bck_image => {this.bck_image=bck_image}}
@@ -1279,6 +1283,8 @@ class Draw extends Component {
             create_inner_polygon={this.create_inner_polygon.bind(this)}
             handle_volume={this.state.handle_volume}
             handleVolume={this.handleVolume.bind(this)}
+            vessel_specific_weight={this.state.vessel_specific_weight}
+            vesselSpecWeight={(w) => this.setState({vessel_specific_weight:w})}
           />
 
         </div>

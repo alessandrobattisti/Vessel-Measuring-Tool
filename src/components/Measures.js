@@ -8,7 +8,7 @@ export default class Measures extends Component {
 
     vessel_volume: 0,
     vessel_unit: 1,
-    vessel_specific_weight: 2,
+    vessel_specific_weight: 0,
 
     content_specific_weight: 1,
     content_volume: 0,
@@ -25,7 +25,8 @@ export default class Measures extends Component {
       vessel_volume:nProp.vessel_volume,
       vessel_volume2:nProp.vessel_volume2,
       handle_volume:nProp.handle_volume,
-      handle_weight:nProp.handle_volume * this.state.vessel_unit * this.state.vessel_specific_weight
+      handle_weight:nProp.handle_volume * this.state.vessel_unit * this.state.vessel_specific_weight,
+      vessel_specific_weight:nProp.vessel_specific_weight
     }, () => this.vesselWeightCalc())
   }
 
@@ -64,6 +65,7 @@ export default class Measures extends Component {
   }
 
   VesselSpecWeightSetter(e){
+    this.props.vesselSpecWeight(e.target.value)
     this.setState({vessel_specific_weight:parseFloat(e.target.value)}, () => {
       this.vesselWeightCalc()
     })
@@ -149,7 +151,7 @@ export default class Measures extends Component {
           <h3>Weight</h3>
           <div className="furtherCalc">
             <p>Insert specfic weight of vessel's material to calculate vessel weight:</p>
-            <input id="specific-weight" type="number" defaultValue="2" min='0' step="0.01"
+            <input id="specific-weight" type="number" value={this.state.vessel_specific_weight} min='0' step="0.01"
               onChange={this.VesselSpecWeightSetter.bind(this)}/>
             <select onChange={this.VesselUnitSetter.bind(this)}>
               <option value="1">kg/dm3</option>
