@@ -168,7 +168,7 @@ input:focus, select:focus {
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(255, 0, 0, 0.6);
 }
 
-#file-uploader {
+#file-uploader, #plain-svg-uploader {
   margin-top: -5px;
   background: #f6f6f6;
 }
@@ -326,7 +326,7 @@ circle, rect {
   font-weight: bold;
 }
 
-#import-file {
+#import-file, #import-file-plain-svg {
   border-top: unset;
   background: unset;
   font-size: unset;
@@ -342,7 +342,7 @@ circle, rect {
   box-sizing: border-box;
 }
 
-.interface-button:hover, #import-file:hover {
+.interface-button:hover, #import-file:hover, #import-file-plain-svg:hover {
   background: rgb(54, 54, 54);
 }
 
