@@ -9,6 +9,8 @@ import Steps from './components/Steps'
 import Measures from './components/Measures'
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css' // Import css
+import { toPoints } from 'svg-points'
+import { plainShapeObject } from 'wilderness-dom-node'
 import { calc_vol, calcScale, join2Polylines, innerProfileToPolygon, importSvg,
   create_polygon, recreate_snapping_points, toD3, mirrorY, degreeToMatrix } from './calc_functions'
 const svgPanZoom = require('svg-pan-zoom')
@@ -948,6 +950,53 @@ class Draw extends Component {
   //                                  IMPORT                                  //
   //////////////////////////////////////////////////////////////////////////////
 
+  plainSvgImportdHandler(e){
+    var fileToLoad = e.target.files[0]
+    var fileReader = new FileReader();
+    fileReader.onload = function(){
+      //convert string to dom elemetns
+      var template = document.createElement('template');
+      template.innerHTML = fileReader.result;
+      let paths = template.content.querySelectorAll('path, polyline')
+      let new_paths = []
+      paths.forEach(function(path){
+        let new_path = plainShapeObject(path)
+        let points = toPoints(new_path)
+        let str_points = []
+        points.forEach(el => str_points.push([el.x, el.y]))//`${el.x},${el.y} `)
+        let t=new Polyline({
+          points: [],
+          id: String(this.id),
+          type: 'test',
+          selected: false,
+          canvas: this.canvas,
+          offsetX: this.x,
+          offsetY: this.y,
+          currentZoom: this.panZoomTiger.getZoom()
+        })
+        t.fill = path.style.fill
+        t.stroke = path.style.stroke
+        t.el.style.fillOpacity = path.style.fillOpacity
+        str_points.forEach(p => t.appendPoint(p))
+        t.draw()
+        t.stopEditing({code:'Escape'})
+        this.id++
+        new_paths.push(t)
+      }.bind(this))
+
+      this.setState({polylines:this.state.polylines.concat(new_paths)}, ()=>{
+        this.globalStopEditingMode()
+        //event listener to select on click
+        this.state.polylines.forEach(function(polyline){
+          polyline.el.addEventListener('click', this.selectList)
+        }.bind(this))
+      })
+    }.bind(this)
+
+    fileReader.readAsText(fileToLoad, "UTF-8");
+
+  }
+
   svgImportdHandler(e){
     var fileToLoad = e.target.files[0]
     var fileReader = new FileReader();
@@ -1021,9 +1070,9 @@ class Draw extends Component {
         }
       }.bind(this))
       //save to state
-      this.setState({polylines:new_lines.filter(
+      this.setState({polylines:this.state.polylines.concat(new_lines.filter(
         el => el.type !== 'metric').filter(el => el.type !== 'center').filter(
-          el => el.type !== 'max_fill')
+          el => el.type !== 'max_fill'))
         }, () => {
         this.globalStopEditingMode()
         //simulate esc press
@@ -1226,7 +1275,7 @@ class Draw extends Component {
                 title="Download SVG (no scaling)"
                 alt="Download SVG (no scaling)"
                 >
-                SVG
+                vtm-SVG
               </div>
               <div
                 className="interface-button"
@@ -1247,7 +1296,10 @@ class Draw extends Component {
 
               <div id="actions-title2">Import:</div>
               <input className="hidden" type="file" accept="image/svg+xml" id="svg-uploader" onChange={this.svgImportdHandler.bind(this)}></input>
-              <label className="interface-button" id="import-file" htmlFor="svg-uploader">SVG</label>
+              <label className="interface-button" id="import-file" htmlFor="svg-uploader">vtm-SVG</label>
+
+              <input className="hidden" type="file" accept="image/svg+xml" id="plain-svg-uploader" onChange={this.plainSvgImportdHandler.bind(this)}></input>
+              <label className="interface-button" id="import-file-plain-svg" htmlFor="plain-svg-uploader">SVG</label>
           </div>
           </section>
 

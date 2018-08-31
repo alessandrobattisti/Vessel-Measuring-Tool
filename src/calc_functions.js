@@ -320,6 +320,18 @@ function degreeToMatrix(deg){
 	return "matrix(" + a + ", " + b + ", " + c + ", " + d + ", 0, 0)"
 }
 
+//function pathToPolylinePoints(mypath){
+//	//https://stackoverflow.com/a/39405746
+//	var pathLength = mypath.getTotalLength();
+//	var polygonPoints= [];
+//	var numPoints = 32
+//	for (var i=0; i<numPoints; i++) {
+//		var p = mypath.getPointAtLength(i * pathLength / numPoints)
+//		polygonPoints.push([p.x, p.y])
+//	}
+//	return polygonPoints
+//}
+
 export {
   calc_vol,
   distance,
@@ -334,5 +346,5 @@ export {
 	polyPointsToPathData,
 	mirrorY,
 	importSvg,
-	degreeToMatrix
+	degreeToMatrix,
 }
