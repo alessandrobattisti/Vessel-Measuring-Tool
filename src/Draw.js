@@ -1250,14 +1250,12 @@ class Draw extends Component {
 
           <h2>Draw</h2>
           <section id="drawing">
-            <svg
-              id="drawing-canvas" height="500" width="100%"
+            <svg id="drawing-canvas" height="500" width="100%"
               ref={svg => {this.svg = svg}}
               data-title={this.state.title}
               data-author={this.state.author}
               data-description={this.state.description}
-              data-vessel_specific_weight={this.state.vessel_specific_weight}
-              >
+              data-vessel_specific_weight={this.state.vessel_specific_weight} >
               <g className="svg-pan-zoom_viewport" id="canvas">
                 <image ref={bck_image => {this.bck_image=bck_image}}
                   id="bck-img" xlinkHref={this.state.selectedFile} x="0" y="0"
@@ -1266,36 +1264,24 @@ class Draw extends Component {
             </svg>
             <div className="tools">
               <div id="actions-title">Actions:</div>
-              <div
-                className="interface-button"
-                onClick={()=>this.create_new_polyline()}
+              <div className="interface-button" onClick={()=>this.create_new_polyline()}
                 title="Create new line"
-                alt="Create new line"
-              >
+                alt="Create new line" >
                 New
               </div>
-              <div
-                className="interface-button"
-                onClick={this.enterBreakLineMode.bind(this)}
+              <div className="interface-button" onClick={this.enterBreakLineMode.bind(this)}
                 title="Break selected line"
-                alt="Break selected line"
-                >
+                alt="Break selected line" >
                 Break
               </div>
-              <div
-                className="interface-button"
-                onClick={this.mirrorY.bind(this)}
+              <div className="interface-button" onClick={this.mirrorY.bind(this)}
                 title="Edit selected line"
-                alt="Edit selected line"
-                >
+                alt="Edit selected line" >
                 Mirror Y
               </div>
-              <div
-                className="interface-button"
-                onClick={() => this.layerMove('up')}
+              <div className="interface-button" onClick={() => this.layerMove('up')}
                 title="Raise selected layer one step"
-                alt="Raise selected layer one step"
-              >
+                alt="Raise selected layer one step" >
                 Raise l.
               </div>
               <div className="interface-button" onClick={() => this.layerMove('down')}
@@ -1303,53 +1289,40 @@ class Draw extends Component {
                 alt="Lower selected layer one step" >
                 Lower l.
               </div>
-
               {!this.state.no_snapping &&
-              <div className="interface-button"
-                title="Click to turn off"
+              <div className="interface-button" title="Click to turn off"
                 onClick={() => {this.setState({no_snapping:true}); window.no_snapping=true}}>
                 Snap is on
               </div>
               }
-
               {this.state.no_snapping &&
-              <div className="interface-button"
-                title="Click to turn on"
+              <div className="interface-button" title="Click to turn on"
                 onClick={() => {this.setState({no_snapping:false}); window.no_snapping=false}}>
                 Snap is off
               </div>
               }
-
               <div id="actions-title2">Export:</div>
               <div
-                className="interface-button"
-                onClick={this.download_svg.bind(this)}
-                title="Download VMT-SVG, use this to save your drawing as is. You'll be able to import it back and keep working on it.
+                className="interface-button" onClick={this.download_svg.bind(this)}
+                title="Download VMT-SVG, use this to save your drawing as is.
+                You'll be able to import it back and keep working on it.
                 You can open it with a svg editor but if edited it may lose some information"
-                alt="Download VMT-SVG"
-                >
+                alt="Download VMT-SVG">
                 VMT-SVG
               </div>
-              <div
-                className="interface-button"
-                onClick={this.download_dxf.bind(this)}
+              <div className="interface-button" onClick={this.download_dxf.bind(this)}
                 title="Download all-lines as DXF (scaled: 1 unit = 1 meter)"
-                alt="Download all-lines as DXF (scaled: 1 unit = 1 meter)"
-                >
+                alt="Download all-lines as DXF (scaled: 1 unit = 1 meter)">
                 DXF
               </div>
-              <div
-                className="interface-button"
-                onClick={this.download_json.bind(this)}
+              <div className="interface-button" onClick={this.download_json.bind(this)}
                 title="Download inner-profile as JSON (scaled: 1 unit = 1 meter)"
-                alt="Download inner-profile as JSON (scaled: 1 unit = 1 meter)"
-              >
+                alt="Download inner-profile as JSON (scaled: 1 unit = 1 meter)">
                 JSON
               </div>
 
               <div id="actions-title2">Import:</div>
-              <input
-                className="hidden"  type="file"  accept="image/svg+xml"
+              <input className="hidden"  type="file"  accept="image/svg+xml"
                 id="svg-uploader"  onChange={this.svgImportdHandler.bind(this)}>
               </input>
               <label className="interface-button" id="import-file" htmlFor="svg-uploader"
@@ -1357,7 +1330,8 @@ class Draw extends Component {
                 VMT-SVG
               </label>
 
-              <input className="hidden" type="file" accept="image/svg+xml" id="plain-svg-uploader" onChange={this.plainSvgImportdHandler.bind(this)}>
+              <input className="hidden" type="file" accept="image/svg+xml"
+                id="plain-svg-uploader" onChange={this.plainSvgImportdHandler.bind(this)}>
               </input>
               <label className="interface-button" id="import-file-plain-svg" htmlFor="plain-svg-uploader"
                 title="Import a plain SVG file. Only paths and polylines will be imported">
