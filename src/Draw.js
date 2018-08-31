@@ -183,6 +183,22 @@ class Draw extends Component {
     }
   }
 
+  lightSelectActive(id){
+    this.state.polylines.forEach(function(poly){
+      poly.el.classList.remove('active')
+    })
+    if(this.state.active_polyline){
+      this.state.active_polyline.el.classList.add('active')
+    }
+  }
+
+  lightSelectLayer(id){
+    this.state.polylines.forEach(function(poly){
+      poly.el.classList.remove('active')
+    })
+    this.getPolylineById(id).el.classList.add('active')
+  }
+
   selectLayer(id){
     this.globalStopEditingMode()
     this.setState({active_polyline: this.getPolylineById(id)},
@@ -926,15 +942,15 @@ class Draw extends Component {
     let initial_pos, to, from;
     polylines.forEach((p, key) => {if(p.id===this.state.active_polyline.id){initial_pos=key}})
     //return if move is impossible
-    if((initial_pos===0 && dir==='up')|| (initial_pos === this.state.polylines.length-1 && dir!=='up')){
+    if((initial_pos===0 && dir!=='up')|| (initial_pos === this.state.polylines.length-1 && dir==='up')){
       return
     }
     //move layer
     to = parseInt(initial_pos, 10)
     if(dir==='up'){
-      from = to-1
-    }else{
       from = to+1
+    }else{
+      from = to-1
     }
     polylines.splice(to, 0, polylines.splice(from, 1)[0]);
     this.setState({polylines:polylines}, ()=>{
@@ -1327,7 +1343,7 @@ class Draw extends Component {
                    />
                </div>
              </div>}
-              {this.state.polylines.map(el =>
+              {this.state.polylines.slice().reverse().map(el =>
                 <ListPoly
                   key={el.id}
                   name={el.name}
@@ -1338,6 +1354,8 @@ class Draw extends Component {
                   colorChange={this.colorChange.bind(this)}
                   typeChange={this.typeChange.bind(this)}
                   selectLayer={this.selectLayer.bind(this)}
+                  lightSelectLayer={this.lightSelectLayer.bind(this)}
+                  lightSelectActive={this.lightSelectActive.bind(this)}
                   selectedPoly={this.state.active_polyline ? this.state.active_polyline.id : ''}
                   />
               )}

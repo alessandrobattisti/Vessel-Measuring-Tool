@@ -40,6 +40,8 @@ export default class ListPoly extends Component {
       <div
         className={(this.props.selectedPoly === this.props.id) ? "polyline-layer polyline-active" : "polyline-layer"}
         onClick={()=>this.props.selectLayer(this.props.id)}
+        onMouseOver={()=>this.props.lightSelectLayer(this.props.id)}
+        onMouseOut={()=>this.props.lightSelectActive()}
         >
         <div>
           <select id="select-type" value={this.props.type}
