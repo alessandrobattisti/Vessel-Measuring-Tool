@@ -27,6 +27,7 @@ class Draw extends Component {
     this.resizeSvg = this.resizeSvg.bind(this)
     this.unselect_polyline = this.unselect_polyline.bind(this)
     this.selectList = this.selectList.bind(this)
+    this.addVector = this.addVector.bind(this)
   }
   state = {
     polylines: [],
@@ -238,7 +239,7 @@ class Draw extends Component {
 
   unselect_polyline(e){
     this.addClickSelectEvent()
-
+    this.canvas.removeEventListener('dblclick', this.addVector)
     if( e.code === 'Escape' || e.code === 'KeyQ'){
       if(this.state.active_polyline){
         this.state.active_polyline.el.classList.remove('active')
@@ -269,7 +270,7 @@ class Draw extends Component {
   }
 
   globalStopEditingMode(){
-
+    this.canvas.removeEventListener('dblclick', this.addVector)
     this.state.polylines.forEach(function(poly){
       poly.el.classList.remove('active')
     })
@@ -944,6 +945,8 @@ class Draw extends Component {
   //////////////////////////////////////////////////////////////////////////////
   //                                MOVE LAYERS                               //
   //////////////////////////////////////////////////////////////////////////////
+
+  /* Raise/lower layer in layers order */
   layerMove(dir){
     if(!this.state.active_polyline){
       this.addNotification('No line selected')
@@ -972,6 +975,51 @@ class Draw extends Component {
         this.canvas.appendChild(p.el)
       })
     })
+  }
+
+  /* Move a layer, draw a start and an end point
+  this is the function called by clicking on "Move" button*/
+  moveLine(){
+    if(this.vector){
+      this.canvas.removeChild(this.vector.el)
+    }
+    this.vector = null
+
+    if(!this.state.active_polyline){
+      this.addNotification('No line selected')
+      return
+    }
+    this.vector = new Polyline({
+      points: [],
+      id: 'vector',
+      type: 'vector',
+      selected: true,
+      canvas: this.canvas,
+      offsetX: this.x,
+      offsetY: this.y,
+      currentZoom: this.panZoomTiger.getZoom()
+    })
+    this.addCursorPoint()
+    this.vector.softStopEditing()
+    this.canvas.addEventListener('dblclick', this.addVector)
+  }
+
+  /* Move a layer, draw a start and an end point
+  this is the function called by dblclick event listener */
+  addVector(e){
+    this.vector.add_point(e)
+    if(this.vector.points.length>=2){
+        let deltaX = this.vector.points[1].cx - this.vector.points[0].cx
+        let delatY = this.vector.points[1].cy - this.vector.points[0].cy
+        this.state.active_polyline.move([deltaX, delatY])
+        //clenup
+        this.canvas.removeEventListener('dblclick', this.addVector)
+        this.removeCursorPoint()
+        this.canvas.removeChild(this.vector.el)
+        this.vector.stopEditing({code:"Escape"})
+        this.vector = null
+        recreate_snapping_points(this.state.polylines)
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -1278,6 +1326,11 @@ class Draw extends Component {
                 title="Edit selected line"
                 alt="Edit selected line" >
                 Mirror Y
+              </div>
+              <div className="interface-button" onClick={this.moveLine.bind(this)}
+                title="Move selected line"
+                alt="Move selected line" >
+                Move
               </div>
               <div className="interface-button" onClick={() => this.layerMove('up')}
                 title="Raise selected layer one step"

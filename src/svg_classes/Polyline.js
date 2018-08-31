@@ -68,6 +68,14 @@ export default class Poly {
     return tot
   }
 
+  move(vector){
+    this.points.map(el => {
+      el.cx += vector[0]
+      el.cy += vector[1]
+      return el
+    })
+    this.draw()
+  }
   draw_midpoints() {
     //remove from canvas
     this.midpoints.forEach(function(midpoint) {
@@ -231,6 +239,10 @@ export default class Poly {
 
   removeLastPoint() {
     this.points.pop()
+  }
+
+  softStopEditing(){
+    this.canvas.removeEventListener('dblclick', this.add_point)
   }
 
   stopEditing(e) {
