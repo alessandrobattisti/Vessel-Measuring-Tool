@@ -1005,7 +1005,7 @@ class Draw extends Component {
       var template = document.createElement('template');
       template.innerHTML = fileReader.result;
       //get basic info from svg
-      let svg = template.content.childNodes[0]
+      let svg = template.content.querySelector('svg')//template.content.childNodes[0]
       try {
         this.setState({
           title:svg.dataset.title,
@@ -1016,9 +1016,10 @@ class Draw extends Component {
       }
       catch(err) {
         this.addNotification("Import failed. It's possible to import only SVG previously exported by this software.")
+        return;
       }
       //get lines
-      let elements = template.content.childNodes[0].firstChild.children
+      let elements = template.content.querySelectorAll('image, polyline')//template.content.childNodes[0].firstChild.children
       //convert dom elements to Polyline objects
       let res = importSvg(elements, this.canvas, this.id, this.x, this.y)
       let new_lines = res[0]
@@ -1272,10 +1273,11 @@ class Draw extends Component {
               <div
                 className="interface-button"
                 onClick={this.download_svg.bind(this)}
-                title="Download SVG (no scaling)"
-                alt="Download SVG (no scaling)"
+                title="Download VMT-SVG, use this to save your drawing as is. You'll be able to import it back and keep working on it.
+                You can open it with a svg editor but if edited it may lose some information"
+                alt="Download VMT-SVG"
                 >
-                vtm-SVG
+                VMT-SVG
               </div>
               <div
                 className="interface-button"
@@ -1295,11 +1297,21 @@ class Draw extends Component {
               </div>
 
               <div id="actions-title2">Import:</div>
-              <input className="hidden" type="file" accept="image/svg+xml" id="svg-uploader" onChange={this.svgImportdHandler.bind(this)}></input>
-              <label className="interface-button" id="import-file" htmlFor="svg-uploader">vtm-SVG</label>
+              <input
+                className="hidden"  type="file"  accept="image/svg+xml"
+                id="svg-uploader"  onChange={this.svgImportdHandler.bind(this)}>
+              </input>
+              <label className="interface-button" id="import-file" htmlFor="svg-uploader"
+                title="Import a previously exported VMT-SVG">
+                VMT-SVG
+              </label>
 
-              <input className="hidden" type="file" accept="image/svg+xml" id="plain-svg-uploader" onChange={this.plainSvgImportdHandler.bind(this)}></input>
-              <label className="interface-button" id="import-file-plain-svg" htmlFor="plain-svg-uploader">SVG</label>
+              <input className="hidden" type="file" accept="image/svg+xml" id="plain-svg-uploader" onChange={this.plainSvgImportdHandler.bind(this)}>
+              </input>
+              <label className="interface-button" id="import-file-plain-svg" htmlFor="plain-svg-uploader"
+                title="Import a plain SVG file. Only paths and polylines will be imported">
+                SVG
+              </label>
           </div>
           </section>
 
