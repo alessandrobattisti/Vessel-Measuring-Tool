@@ -12,7 +12,7 @@ export default class Poly {
     this.id = obj.id
     this.type = obj.type
     this.el = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-    this.el.classList.add('active')
+    this.el.classList.add('editing')
     this.canvas = obj.canvas
     this.el.id = this.id
 
@@ -69,13 +69,16 @@ export default class Poly {
   }
 
   move(vector){
-    this.points.map(el => {
+    this.points = this.points.map(el => {
       el.cx += vector[0]
       el.cy += vector[1]
-      return el
+      el.old_cx = el.cx
+      el.old_cy = el.cy
+    return el
     })
     this.draw()
   }
+
   draw_midpoints() {
     //remove from canvas
     this.midpoints.forEach(function(midpoint) {

@@ -20,7 +20,7 @@ export default class ListPoly extends Component {
       {val: 'magenta', text: 'Magenta'},
       {val: '#1d47ff', text: 'Blue'},
       {val: '#ff3b30', text: 'Red'},
-      {val: '#4bea4b', text: 'Green'},
+      /*{val: '#4bea4b', text: 'Green'},*/
       {val: 'black', text: 'Black'},
       {val: 'white', text: 'White'},
     ]

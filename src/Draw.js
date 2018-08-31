@@ -247,6 +247,7 @@ class Draw extends Component {
     this.canvas.removeEventListener('dblclick', this.addVector)
     if( e.code === 'Escape' || e.code === 'KeyQ'){
       if(this.state.active_polyline){
+        this.state.active_polyline.el.classList.remove('editing')
         this.state.active_polyline.el.classList.remove('active')
         this.state.active_polyline.stopEditing({'code':'Escape'})
         if(this.state.active_polyline.editing){
@@ -277,7 +278,7 @@ class Draw extends Component {
   globalStopEditingMode(){
     this.canvas.removeEventListener('dblclick', this.addVector)
     this.state.polylines.forEach(function(poly){
-      poly.el.classList.remove('active')
+      poly.el.classList.remove('editing')
     })
     this.state.polylines.forEach(p => {
       if(p.editing){
@@ -539,15 +540,15 @@ class Draw extends Component {
   }
 
   addMaxFill(e){
-    this.maxFill.stroke = 'rgb(0, 255, 21)'
-    this.maxFill.el.dataset.stroke = 'rgb(0, 255, 21)'
+    this.maxFill.stroke = 'rgb(0, 255, 174)'
+    this.maxFill.el.dataset.stroke = 'rgb(0, 255, 174)'
     this.maxFill.add_point(e)
     this.canvas.appendChild(this.maxFill.el)
     this.maxFill.draw()
     //exit editing mode
     this.addClickSelectEvent()
     this.maxFill.is_editing = false
-    this.maxFill.el.classList.remove('active')
+    this.maxFill.el.classList.remove('editing')
     this.canvas.removeEventListener('dblclick', this.addMaxFill)
     this.maxFill.stopEditing({'code':'Escape'})
     this.removeCursorPoint()
@@ -598,7 +599,7 @@ class Draw extends Component {
       this.metric.el.dataset.stroke = 'red'
       this.metric.stopEditing({code:"Escape"})
       //set color
-      this.metric.el.classList.remove('active')
+      this.metric.el.classList.remove('editing')
       //stop editing
       this.addClickSelectEvent()
       this.metric.is_editing = false
@@ -647,7 +648,7 @@ class Draw extends Component {
     //exit editing mode
     this.addClickSelectEvent()
     this.rotAxis.is_editing = false
-    this.rotAxis.el.classList.remove('active')
+    this.rotAxis.el.classList.remove('editing')
     this.canvas.removeEventListener('dblclick', this.addRotAxis)
     this.rotAxis.stopEditing({'code':'Escape'})
     this.removeCursorPoint()
@@ -795,7 +796,7 @@ class Draw extends Component {
       polyline.appendPoint([point.cx, point.cy])
       if(point.cx===parseFloat(break_point[0]) && point.cy===parseFloat(break_point[1])){
         //save draw and exit editing mode
-        polyline.el.classList.remove('active')
+        polyline.el.classList.remove('editing')
         new_polylines.push( polyline )
         this.id++
         polyline.draw()
@@ -1132,7 +1133,7 @@ class Draw extends Component {
           value:parseFloat(this.metric.el.dataset.metric_value)})
         this.updateToDo('metric', true)
         this.updateToDo('ref_unit', true)
-        this.metric.el.classList.remove('active')
+        this.metric.el.classList.remove('editing')
         this.metric.id = 'metric'
       }
       //rot axis
@@ -1141,7 +1142,7 @@ class Draw extends Component {
         this.rotAxis = rotAxis[0]
         window.r_axis = rotAxis[0].points[0].cx
         this.updateToDo('rotAxis', true)
-        this.rotAxis.el.classList.remove('active')
+        this.rotAxis.el.classList.remove('editing')
         this.rotAxis.id = 'center'
       }
       //max fill
@@ -1150,7 +1151,7 @@ class Draw extends Component {
         this.maxFill = maxFill[0]
         window.maxFill = this.maxFill.points[0].cy
         this.updateToDo('maxFill', true)
-        this.maxFill.el.classList.remove('active')
+        this.maxFill.el.classList.remove('editing')
         this.maxFill.id = 'max_fill'
       }
       //add handle number to form and then state

@@ -290,10 +290,6 @@ ul>li {
   background-color: gray;
 }
 
-.active {
-  stroke: rgb(123, 207, 225) !important;
-}
-
 .polyline-active:hover {
   background: rgb(56, 56, 56);
 }
@@ -316,6 +312,22 @@ polyline {
 
 polyline:hover {
   stroke: rgb(123, 207, 225) !important;
+}
+
+.active {
+  stroke: rgb(123, 207, 225) !important;
+}
+
+.active:hover {
+  stroke: rgb(123, 207, 225) !important;
+}
+
+.editing {
+  stroke: rgb(6, 255, 0) !important;
+}
+
+.editing:hover {
+  stroke: rgb(6, 255, 0) !important;
 }
 
 #metric, #center, #max_fill {
