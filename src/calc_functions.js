@@ -264,6 +264,7 @@ function importSvg(lines, canvas, id, x, y){
 	let new_lines = []
 	let img_transform = false
 	let img_name = ''
+	let img_info
 	lines.forEach(function(line){
 		if(line.localName === 'polyline'){
 			let new_line = new Polyline({
@@ -299,10 +300,11 @@ function importSvg(lines, canvas, id, x, y){
 		}else if(line.localName === 'image'){
 			img_name = line.href.baseVal
 			img_transform = line.dataset.rotation
+			img_info = {x:line.x.baseVal.value, y:line.y.baseVal.value, height:line.height.baseVal.value, width:line.width.baseVal.value}
 		}
 	})
 
-	return [new_lines, id, img_transform, img_name]
+	return [new_lines, id, img_transform, img_name, img_info]
 }
 
 function degreeToMatrix(deg){

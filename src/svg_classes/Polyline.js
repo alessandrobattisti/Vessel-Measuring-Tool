@@ -160,6 +160,9 @@ export default class Poly {
   }
 
   snapPoint(new_point){
+    if(window.no_snapping){
+      return new_point
+    }
     const max_dist = 25/window.zoom
     let founds = []
     window.snapping_points.forEach(function(point){

@@ -16,6 +16,7 @@ export default class ListPoly extends Component {
       {val: 'decoration', text: 'Decoration'},
     ],
     colors : [
+      {val: '', text: 'Change'},
       {val: 'magenta', text: 'Magenta'},
       {val: '#1d47ff', text: 'Blue'},
       {val: '#ff3b30', text: 'Red'},
@@ -54,7 +55,8 @@ export default class ListPoly extends Component {
           </select>
         </div>
         <div>
-          <select id="select-color" onClick={(e)=>e.stopPropagation()} onChange={this.colorChange.bind(this)} ref={color => this.color = color}>
+          <select id="select-color" defaultValue={this.props.color} onClick={(e)=>e.stopPropagation()} 
+            onChange={this.colorChange.bind(this)} ref={color => this.color = color}>
             {this.state.colors.map(el =>
               <option value={el.val} key={el.val}>{el.text}</option>
             )}

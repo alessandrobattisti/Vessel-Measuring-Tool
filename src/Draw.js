@@ -34,6 +34,7 @@ class Draw extends Component {
     selectedFile: '',
     img_w: 1000,
     img_h: 1000,
+    img_imported: false,
     notification:{id:-1,message:''},
     toDo:{
       image:false, rotAxis:false, metric:false, out_prof:false,
@@ -52,7 +53,8 @@ class Draw extends Component {
     vessel_volume2:null,
     content_volume:null,
     content_volume2:null,
-    vessel_specific_weight:2
+    vessel_specific_weight:2,
+    no_snapping:false
   }
   id = 0
   not_id = 0
@@ -74,13 +76,14 @@ class Draw extends Component {
     window.zoom = 1
     window.r_axis = null
     window.addEventListener('keyup', this.unselect_polyline)
+    window.no_snapping = false
 
     //init zoom canvas
     this.panZoomTiger = svgPanZoom('#drawing-canvas', {
       dblClickZoomEnabled: false,
       panEnabled: true,
-      zoomScaleSensitivity: 0.8,
-      maxZoom: 50,
+      zoomScaleSensitivity: 1,
+      maxZoom: 150,
       minZoom: 0.1,
 
       onZoom: function(e){
@@ -843,9 +846,13 @@ class Draw extends Component {
         var height = img.naturalHeight
         let toDo = this.state.toDo
         toDo.image = true
+        if(!this.state.img_imported){
+          this.setState({
+            img_w:width,
+            img_h:height,
+          })
+        }
         this.setState({
-          img_w:width,
-          img_h:height,
           selectedFile: img.src,
           toDo: toDo
          })
@@ -1042,6 +1049,16 @@ class Draw extends Component {
       this.id = res[1]
       let img_transform = res[2]
       let img_name = res[3]
+      let img_info = res[4]
+      if(img_info){
+        this.bck_image.setAttribute('x', img_info.x)
+        this.bck_image.setAttribute('y', img_info.y)
+        this.setState({
+          img_w:img_info.width,
+          img_h:img_info.height,
+          img_imported:true
+         })
+      }
       if(img_transform){
         this.setState(
           {img_rot:parseFloat(img_transform)}
@@ -1274,16 +1291,29 @@ class Draw extends Component {
                 title="Raise selected layer one step"
                 alt="Raise selected layer one step"
               >
-                Raise
+                Raise l.
               </div>
-              <div
-                className="interface-button"
-                onClick={() => this.layerMove('down')}
+              <div className="interface-button" onClick={() => this.layerMove('down')}
                 title="Lower selected layer one step"
-                alt="Lower selected layer one step"
-              >
-                Lower
+                alt="Lower selected layer one step" >
+                Lower l.
               </div>
+
+              {!this.state.no_snapping &&
+              <div className="interface-button"
+                title="Click to turn off"
+                onClick={() => {this.setState({no_snapping:true}); window.no_snapping=true}}>
+                Snap is on
+              </div>
+              }
+
+              {this.state.no_snapping &&
+              <div className="interface-button"
+                title="Click to turn on"
+                onClick={() => {this.setState({no_snapping:false}); window.no_snapping=false}}>
+                Snap is off
+              </div>
+              }
 
               <div id="actions-title2">Export:</div>
               <div
@@ -1349,6 +1379,7 @@ class Draw extends Component {
                   name={el.name}
                   type={el.type}
                   id={el.id}
+                  color={el.stroke}
                   delete_line={this.delete_line.bind(this)}
                   edit_line={this.edit_line.bind(this)}
                   colorChange={this.colorChange.bind(this)}
