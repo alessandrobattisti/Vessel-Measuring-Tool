@@ -7,6 +7,8 @@ import ListPoly from './components/listPoly'
 import Notification from './components/Notification'
 import Steps from './components/Steps'
 import Measures from './components/Measures'
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css' // Import css
 import { calc_vol, calcScale, join2Polylines, innerProfileToPolygon, importSvg,
   create_polygon, recreate_snapping_points, toD3, mirrorY, degreeToMatrix } from './calc_functions'
 const svgPanZoom = require('svg-pan-zoom')
@@ -651,6 +653,23 @@ class Draw extends Component {
   }
 
   delete_line(id){
+    confirmAlert({
+      title: 'Delete confirmation',
+      message: 'Are you sure you want to delete this line?',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => this.actualDelete(id)
+        },
+        {
+          label: 'No',
+          onClick: () => { return }
+        }
+      ]
+    })
+  }
+
+  actualDelete(id){
     this.globalStopEditingMode()
     let p = this.getPolylineById(id)
     this.canvas.removeChild(p.el)

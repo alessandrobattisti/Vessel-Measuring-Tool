@@ -7,6 +7,7 @@
     "downloadjs": "^1.4.7",
     "makerjs": "^0.11.1",
     "react": "^16.4.2",
+    "react-confirm-alert": "^2.0.5",
     "react-dom": "^16.4.2",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
