@@ -165,6 +165,7 @@ class Draw extends Component {
     })
     //save
     polyline.el.setAttribute('type', type)
+    polyline.el.dataset.stroke = polyline.el.stroke
     new_polylines.push( polyline )
     this.id++
     this.setState(
@@ -533,6 +534,7 @@ class Draw extends Component {
 
   addMaxFill(e){
     this.maxFill.stroke = 'rgb(0, 255, 21)'
+    this.maxFill.el.dataset.stroke = 'rgb(0, 255, 21)'
     this.maxFill.add_point(e)
     this.canvas.appendChild(this.maxFill.el)
     this.maxFill.draw()
@@ -587,6 +589,7 @@ class Draw extends Component {
         return
       }
       this.metric.stroke = 'red'
+      this.metric.el.dataset.stroke = 'red'
       this.metric.stopEditing({code:"Escape"})
       //set color
       this.metric.el.classList.remove('active')
@@ -631,6 +634,7 @@ class Draw extends Component {
 
   addRotAxis(e){
     this.rotAxis.stroke = '#ff5a00'
+    this.rotAxis.el.dataset.stroke = '#ff5a00'
     this.rotAxis.add_point(e)
     this.canvas.appendChild(this.rotAxis.el)
     this.rotAxis.draw()
@@ -652,6 +656,7 @@ class Draw extends Component {
 
   colorChange(id, color){
     const my_polyline = this.getPolylineById(id)
+    my_polyline.el.dataset.stroke = color
     my_polyline.stroke = color
     my_polyline.draw()
   }

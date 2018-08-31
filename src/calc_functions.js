@@ -277,10 +277,12 @@ function importSvg(lines, canvas, id, x, y){
 				offsetY: y,
 				currentZoom: window.zoom
 			})
+			let stroke = line.dataset.stroke ? line.dataset.stroke : 'black'
+			new_line.stroke = stroke
+			new_line.el.style.stroke = stroke
+			new_line.el.dataset.stroke = stroke
 			new_line.el.style.fill = line.style.fill
-			new_line.el.style.stroke = line.style.stroke
 			new_line.fill = line.style.fill
-			new_line.stroke = line.style.stroke
 			new_line.el.setAttribute('type', line.getAttribute('type'))
 			if(line.getAttribute('type')==='metric'){
 				new_line.el.dataset.metric_value = line.dataset.metric_value
