@@ -896,6 +896,10 @@ class Draw extends Component {
   //                                MOVE LAYERS                               //
   //////////////////////////////////////////////////////////////////////////////
   layerMove(dir){
+    if(!this.state.active_polyline){
+      this.addNotification('No line selected')
+      return
+    }
     let polylines = this.state.polylines
     //get initial position
     let initial_pos, to, from;
