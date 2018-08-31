@@ -11,6 +11,7 @@ import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css' // Import css
 import { toPoints } from 'svg-points'
 import { plainShapeObject } from 'wilderness-dom-node'
+import SimpleLineIcon from 'react-simple-line-icons';
 import { calc_vol, calcScale, join2Polylines, innerProfileToPolygon, importSvg,
   create_polygon, recreate_snapping_points, toD3, mirrorY, degreeToMatrix } from './calc_functions'
 const svgPanZoom = require('svg-pan-zoom')
@@ -103,6 +104,10 @@ class Draw extends Component {
         if(this.metric){
           this.metric.zoom = e
           this.metric.setSize( e )
+        }
+        if(this.vector){
+          this.vector.zoom = e
+          this.vector.setSize( e )
         }
         if(this.rotAxis){
           this.rotAxis.zoom = e
@@ -1332,16 +1337,6 @@ class Draw extends Component {
                 alt="Move selected line" >
                 Move
               </div>
-              <div className="interface-button" onClick={() => this.layerMove('up')}
-                title="Raise selected layer one step"
-                alt="Raise selected layer one step" >
-                Raise l.
-              </div>
-              <div className="interface-button" onClick={() => this.layerMove('down')}
-                title="Lower selected layer one step"
-                alt="Lower selected layer one step" >
-                Lower l.
-              </div>
               {!this.state.no_snapping &&
               <div className="interface-button" title="Click to turn off"
                 onClick={() => {this.setState({no_snapping:true}); window.no_snapping=true}}>
@@ -1394,7 +1389,19 @@ class Draw extends Component {
           </section>
 
           <section id="polylines" ref={polylines_box => {this.polylines_box = polylines_box}}>
-            <div id="layer-title">Layers:</div>
+            <div id="layer-title">
+              <div>Layers:</div>
+              <div className="layer-move-container">
+                <div onClick={() => this.layerMove('up')}
+                  title="Raise selected layer one step" >
+                  <SimpleLineIcon size="Small" name="arrow-up"/>
+                </div>
+                <div onClick={() => this.layerMove('down')}
+                  title="Lower selected layer one step" >
+                  <SimpleLineIcon size="Small" name="arrow-down"/>
+                </div>
+              </div>
+              </div>
               {this.state.toDo.image && <div id="image-layer" className="polyline-layer">
                 <div className="slidecontainer">
                  <label htmlFor="myRange">Rotate image</label>

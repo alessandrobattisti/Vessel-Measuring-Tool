@@ -353,6 +353,27 @@ circle, rect {
   background: #515151;
   color: white;
   font-weight: bold;
+  display: flex;
+}
+
+#layer-title > div {
+  line-height: 30px;
+}
+
+.layer-move-container {
+  display: flex;
+  justify-content: flex-end;
+  flex: 10;
+}
+
+.layer-move-container > div {
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+.layer-move-container > div:hover {
+  padding: 0 5px;
+  background: gray;
 }
 
 #import-file, #import-file-plain-svg {
