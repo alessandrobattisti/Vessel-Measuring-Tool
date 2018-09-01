@@ -37,9 +37,9 @@ h3 {
   margin-bottom: 10px;
   margin-top: 10px;
   border-bottom: 1px solid lightgray;
-  background: #46bfb6;
+  /*background: #46bfb6;*/
   padding: 5px;
-  color: white;
+  color: #212121;
 }
 
 div, p, section, ul, li {
@@ -330,7 +330,7 @@ polyline:hover {
   stroke: rgb(6, 255, 0) !important;
 }
 
-#metric, #center, #max_fill {
+#metric, #center, #max_fill, .quote {
   cursor: auto!important;
   pointer-events: none!important;
 }
@@ -412,8 +412,94 @@ circle, rect {
   width: 100%;
   height: 100%;
   background-color: #474747;
+  background-color: #7d7d7d;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
+
+/*/////////////////////////////////////////////////////////////////////////////*/
+/*///////////////////////////////    QUOTES    ////////////////////////////////*/
+/*/////////////////////////////////////////////////////////////////////////////*/
+.quote:hover {
+  stroke:rgb(123, 207, 225) !important
+}
+
+#quotes {
+  width: 100%;
+  margin-top: 10px;
+}
+
+#quote-title {
+  line-height: 28px;
+  border-top: 1px solid white;
+  padding: 5px;
+  border-bottom: 1px solid lightgray;
+  background: #515151;
+  color: white;
+  font-weight: bold;
+  display: flex;
+}
+
+#quote-title > div:first-child {
+  flex: 10
+}
+
+.hide-show-quotes {
+  text-align: right;
+  flex: 1;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.quote-item {
+  display: flex;
+  padding: 4px 0;
+  color: white;
+  border-bottom: 1px solid white;
+  font-size: 14px;
+}
+
+.quote-item:hover {
+  background: rgb(88, 88, 88);
+}
+
+.quote-item-active {
+  background: rgb(88, 88, 88);
+}
+
+.quote-item > div {
+  flex: 1;
+  box-sizing: border-box;
+  line-height: 29px;
+}
+
+.trash-quote {
+  flex: unset!important;
+  width: auto!important;
+  margin-right: 10px;
+}
+
+.trash-quote > div{
+  font-size: 12px!important;
+  cursor: pointer;
+}
+
+.input-quote {
+  flex: 1 1 !important;
+  display: flex;
+  margin: 0 10px;
+}
+
+.input-quote input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #fbfbfb;
+  border: unset;
+  border-radius: 2px;
+  height: 25px;
+  margin-top: 2px;
+  padding: 5px;
+}
+
 /*/////////////////////////////////////////////////////////////////////////////*/
 /*/////////////////////////////// NOTIFICATION ////////////////////////////////*/
 /*/////////////////////////////////////////////////////////////////////////////*/
@@ -429,6 +515,7 @@ circle, rect {
   padding: 10px;
   color: #363636;
   font-weight: bold;
+  z-index: 100;
 }
 
 .react-confirm-alert-overlay {

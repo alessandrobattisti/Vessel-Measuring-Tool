@@ -119,3 +119,52 @@ edit_line(){
   }
   this.state.active_polyline.editLine()
 }
+
+/* Move aligned quote /*
+//check if mouse is above or below initial line
+//https://stackoverflow.com/a/36494727
+//let mx = currentX - this.centerX
+//let my = currentY - this.centerY
+//let cross = this.dx * my - this.dy * mx    //zero means point on line
+//if(cross === 0){
+//  return
+//}
+//let below = (cross > 0)          //mouse is "at the right hand" of the directed line
+//if(dx !== 0){
+//  if(dy/dx < 0){
+//    below = !below
+//  }
+//  if(this.invert){
+//    below = !below
+//  }
+//}
+//calc distance
+//let r_dist = distance([this.startX, this.startY], [currentX, currentY])
+//let dist
+//if(below){
+//  console.log('below')
+//  dist = this.r_dist - r_dist
+//}else{
+//  dist = r_dist - this.r_dist
+//}
+//if(slope>0){
+//  dist = -1 * dist
+//}
+//this.r_dist = r_dist
+
+if(this.quote.points[0].cx < this.quote.points[1].cx &&this.quote.points[0].cy < this.quote.points[1].cy){
+  console.log(1)
+  this.invert = -1
+}
+if(this.quote.points[0].cx > this.quote.points[1].cx && this.quote.points[0].cy > this.quote.points[1].cy){
+  console.log(2)
+  this.invert = -1
+}
+if(this.quote.points[0].cx < this.quote.points[1].cx &&this.quote.points[0].cy > this.quote.points[1].cy){
+  console.log(3)
+  this.invert = 1
+}
+if(this.quote.points[0].cx > this.quote.points[1].cx && this.quote.points[0].cy < this.quote.points[1].cy){
+  console.log(4)
+  this.invert = 1
+}

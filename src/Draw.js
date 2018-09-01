@@ -12,7 +12,7 @@ import 'react-confirm-alert/src/react-confirm-alert.css' // Import css
 import { toPoints } from 'svg-points'
 import { plainShapeObject } from 'wilderness-dom-node'
 import SimpleLineIcon from 'react-simple-line-icons';
-import { calc_vol, calcScale, join2Polylines, innerProfileToPolygon, importSvg,
+import { calc_vol, calcScale, join2Polylines, innerProfileToPolygon, importSvg, distance,
   create_polygon, recreate_snapping_points, toD3, mirrorY, degreeToMatrix } from './calc_functions'
 const svgPanZoom = require('svg-pan-zoom')
 const download = require("downloadjs")
@@ -29,6 +29,9 @@ class Draw extends Component {
     this.unselect_polyline = this.unselect_polyline.bind(this)
     this.selectList = this.selectList.bind(this)
     this.addVector = this.addVector.bind(this)
+    this.calcQuote = this.calcQuote.bind(this)
+    this.previewQuotation = this.previewQuotation.bind(this)
+    this.addQuotation = this.addQuotation.bind(this)
   }
   state = {
     polylines: [],
@@ -56,7 +59,9 @@ class Draw extends Component {
     content_volume:null,
     content_volume2:null,
     vessel_specific_weight:2,
-    no_snapping:false
+    no_snapping:false,
+    quotes:[],
+    show_quotes:true
   }
   id = 0
   not_id = 0
@@ -101,9 +106,17 @@ class Draw extends Component {
             point.setSize( e )
           })
         })
+        this.state.quotes.forEach(function(poly){
+          poly.zoom = e
+          poly.setSize( e )
+        })
         if(this.metric){
           this.metric.zoom = e
           this.metric.setSize( e )
+        }
+        if(this.quote){
+          this.quote.zoom = e
+          this.quote.setSize( e )
         }
         if(this.vector){
           this.vector.zoom = e
@@ -505,11 +518,26 @@ class Draw extends Component {
       this.setState({content_volume2:calc_vol(this.innerPolygon2, this.scale)})
     }
     if(this.vesselVolume2){
-        this.setState({vessel_volume2:calc_vol(this.vesselVolume2, this.scale)})
+      this.setState({vessel_volume2:calc_vol(this.vesselVolume2, this.scale)})
     }
     let handle_length = this.state.polylines.filter(el => el.type === 'handle_length')
     if(handle_length.length === 1){
       this.handleVolume()
+    }
+    //update quotation distances
+    if(this.state.quotes.length>0){
+      let new_q = this.state.quotes.map(quote => {
+        if(quote.quotation_type==='horizontal'){
+          quote.distance = Math.abs(quote.points[0].cx - quote.points[1].cx) * this.scale * 10
+        }else if(quote.quotation_type==='vertical'){
+          quote.distance = Math.abs(quote.points[0].cy - quote.points[1].cy) * this.scale * 10
+        }else{
+          quote.distance = distance([quote.points[1].cx, quote.points[1].cy], [quote.points[0].cx, quote.points[0].cy]) * this.scale * 10
+        }
+        quote.el.dataset.distance = quote.distance
+        return quote
+      })
+      this.setState({quotes:new_q})
     }
   }
 
@@ -606,6 +634,7 @@ class Draw extends Component {
       this.canvas.removeEventListener('dblclick', this.addMetric)
       this.updateToDo('metric', true)
       this.removeCursorPoint()
+      //recalc scale and scale-dependend values
       if(this.state.metric_value && this.state.metric_unit){
         this.scale = calcScale(this.metric, this.state.metric_value, this.state.metric_unit)
       }
@@ -1027,7 +1056,178 @@ class Draw extends Component {
         recreate_snapping_points(this.state.polylines)
     }
   }
+  //////////////////////////////////////////////////////////////////////////////
+  //                                  QUOTE                                   //
+  //////////////////////////////////////////////////////////////////////////////
+  startQuote(type){
+    if(!this.scale){
+      this.addNotification('You need a to define a reference scale to quote')
+      return
+    }
+    if(this.quote){
+      this.canvas.removeChild(this.quote.el)
+    }
+    this.setState({quotation_type:type})
+    this.quote = new Polyline({
+      points: [],
+      id: String(this.id),
+      type: 'quote',
+      selected: true,
+      canvas: this.canvas,
+      offsetX: this.x,
+      offsetY: this.y,
+      currentZoom: this.panZoomTiger.getZoom()
+    })
+    this.id++
+    this.quote.el.classList.add('quote')
+    this.quote.el.classList.remove('editing')
+    this.quote.el.stroke = 'rgb(51, 51, 51)'
+    this.quote.stroke = 'rgb(51, 51, 51)'
+    this.addCursorPoint()
+    this.quote.softStopEditing()
+    this.canvas.addEventListener('dblclick', this.calcQuote)
+  }
 
+  calcQuote(e){
+    this.quote.add_point(e)
+    if(this.quote.points.length>=2){
+        let deltaX = Math.abs(this.quote.points[1].cx - this.quote.points[0].cx) * this.scale * 10
+        let deltaY = Math.abs(this.quote.points[1].cy - this.quote.points[0].cy) * this.scale * 10
+        let dist = distance([this.quote.points[1].cx, this.quote.points[1].cy], [this.quote.points[0].cx, this.quote.points[0].cy]) * this.scale * 10
+        //clenup
+        this.canvas.removeEventListener('dblclick', this.calcQuote)
+        this.removeCursorPoint()
+        this.quote.stopEditing({code:"Escape"})
+        //place on drawing
+        if(this.state.quotation_type==='horizontal'){
+          this.setState({current_quotation:deltaX})
+          this.quote.points[1].cy = this.quote.points[0].cy
+        }else if(this.state.quotation_type==='vertical'){
+          this.setState({current_quotation:deltaY})
+          this.quote.points[0].cx = this.quote.points[1].cx
+        }else{
+          this.setState({current_quotation:dist})
+          this.invert = 1
+          if(this.quote.points[0].cx < this.quote.points[1].cx &&this.quote.points[0].cy > this.quote.points[1].cy){
+            this.invert = -1
+          }
+          if(this.quote.points[0].cx > this.quote.points[1].cx && this.quote.points[0].cy < this.quote.points[1].cy){
+            this.invert = -1
+          }
+        }
+        this.quote.el.setAttribute('marker-start','url(#red-arrowhead2)')
+        this.quote.el.setAttribute('marker-end','url(#red-arrowhead)')
+        this.canvas.addEventListener('mousemove', this.previewQuotation)
+        this.canvas.addEventListener('dblclick', this.addQuotation)
+        recreate_snapping_points(this.state.polylines)
+    }
+  }
+
+  previewQuotation(e){
+    const matrix = this.canvas.transform.baseVal[0].matrix
+    if(!this.startX){
+      this.startX = this.quote.points[1].cx
+      this.startY = this.quote.points[1].cy
+    }
+    const startX = this.quote.points[1].cx
+    const currentX = ((e.pageX-matrix.e-this.x)/matrix.a)
+    const startY = this.quote.points[1].cy
+    const currentY = ((e.pageY-matrix.f-this.y)/matrix.a)
+    if(this.state.quotation_type==='horizontal'){
+      this.quote.move([0, currentY-startY])
+    }else if(this.state.quotation_type==='vertical'){
+      this.quote.move([currentX-startX, 0])
+    }else{
+      let slope = -1*((this.quote.points[1].cx - this.quote.points[0].cx) / (this.quote.points[1].cy - this.quote.points[0].cy))
+      let dist  = (this.startX - currentX ) * -1
+      if(slope === 0){
+        this.quote.move([dist,0])
+      }else if(!isFinite(slope)){
+        dist  = (this.startY - currentY ) * -1
+        this.quote.move([0,dist])
+      }else {
+        if(slope < -2 || slope > 2){
+          dist  = (this.startY - currentY ) * this.invert
+        }
+        //https://www.geeksforgeeks.org/find-points-at-a-given-distance-on-a-line-of-given-slope/
+        const dx = (dist / Math.sqrt(1 + (slope * slope)));
+        const dy = slope * dx;
+        this.quote.move([dx, dy])
+      }
+      this.startX = currentX
+      this.startY = currentY
+    }
+  }
+
+  addQuotation(e){
+    //cleanup
+    this.canvas.removeEventListener('mousemove', this.previewQuotation)
+    this.canvas.removeEventListener('dblclick', this.addQuotation)
+    this.startX = null
+    //copy and save
+    let quotes = this.state.quotes
+    let quote = new Polyline({
+      points: [],
+      id: String(this.id),
+      type: 'quote',
+      selected: false,
+      canvas: this.canvas,
+      offsetX: this.x,
+      offsetY: this.y,
+      currentZoom: this.panZoomTiger.getZoom()
+    })
+    this.id++
+    quote.el.classList.add('quote')
+    quote.el.classList.remove('editing')
+    quote.el.stroke = 'rgb(51, 51, 51)'
+    quote.stroke = 'rgb(51, 51, 51)'
+    quote.el.setAttribute('marker-start','url(#red-arrowhead2)')
+    quote.el.setAttribute('marker-end','url(#red-arrowhead)')
+    quote.appendPoint([this.quote.points[0].cx, this.quote.points[0].cy])
+    quote.appendPoint([this.quote.points[1].cx, this.quote.points[1].cy])
+    quote.distance = this.state.current_quotation
+    quote.quotation_type = this.state.quotation_type
+    quote.el.dataset.distance = this.state.current_quotation
+    quote.el.dataset.quotation_type = this.state.quotation_type
+    quote.el.setAttribute('type', 'quote')
+    quote.stopEditing({code:"Escape"})
+    quotes.push(quote)
+    this.setState({quotes})
+    this.globalStopEditingMode()
+    //cleanup
+    this.canvas.removeChild(this.quote.el)
+    this.quote = null
+  }
+
+  deleteQuote(id){
+    this.canvas.removeChild(this.state.quotes.filter(el=>el.id===id)[0].el)
+    this.setState({quotes:this.state.quotes.filter(el=>el.id!==id)})
+  }
+
+  select_quote(id){
+    this.state.quotes.forEach(el => el.el.classList.remove('active'))
+    this.state.quotes.filter(el=>el.id===id)[0].el.classList.add('active')
+  }
+
+  deselect_quote(){
+    this.state.quotes.forEach(el => el.el.classList.remove('active'))
+  }
+
+  hide_quotes(){
+    this.setState({show_quotes:false})
+    this.state.quotes.forEach(el => this.canvas.removeChild(el.el))
+  }
+
+  show_quotes(){
+    this.setState({show_quotes:true})
+    this.state.quotes.forEach(el => this.canvas.appendChild(el.el))
+  }
+
+  changeQuoteDescritpion(e, id){
+    let quote = this.state.quotes.filter(el=>el.id===id)[0]
+    quote.quote_definition = e.target.value
+    quote.el.dataset.quote_definition = e.target.value
+  }
   //////////////////////////////////////////////////////////////////////////////
   //                                  IMPORT                                  //
   //////////////////////////////////////////////////////////////////////////////
@@ -1154,6 +1354,21 @@ class Draw extends Component {
         this.maxFill.el.classList.remove('editing')
         this.maxFill.id = 'max_fill'
       }
+      //quote
+      let quote = new_lines.filter(el => el.type === 'quote')
+      let state_quotes = this.state.quotes
+      if(quote.length > 0){
+        quote.forEach(q=>{
+          q.el.classList.add('quote')
+          q.el.classList.remove('editing')
+          q.el.setAttribute('marker-start','url(#red-arrowhead2)')
+          q.el.setAttribute('marker-end','url(#red-arrowhead)')
+          q.el.setAttribute('type', 'quote')
+          state_quotes.push(q)
+        })
+        this.setState({quotes:state_quotes})
+      }
+
       //add handle number to form and then state
       new_lines.forEach(function(line){
         if(line.type==="handle_length"){
@@ -1165,7 +1380,7 @@ class Draw extends Component {
       //save to state
       this.setState({polylines:this.state.polylines.concat(new_lines.filter(
         el => el.type !== 'metric').filter(el => el.type !== 'center').filter(
-          el => el.type !== 'max_fill'))
+          el => el.type !== 'max_fill').filter(el => el.type !== 'quote'))
         }, () => {
         this.globalStopEditingMode()
         //simulate esc press
@@ -1310,6 +1525,15 @@ class Draw extends Component {
               data-author={this.state.author}
               data-description={this.state.description}
               data-vessel_specific_weight={this.state.vessel_specific_weight} >
+              <defs>
+                <marker id="red-arrowhead" viewBox="0 0 6 6" refX="6" refY="3" markerUnits="strokeWidth" markerWidth="4" markerHeight="3" orient="auto">
+                  <path d="M 0 0 L 6 3 L 0 6 z" stroke="rgb(51, 51, 51) " fill="rgb(51, 51, 51) "/>
+                </marker>
+                <marker id="red-arrowhead2" viewBox="0 0 6 6" refX="0" refY="3" markerUnits="strokeWidth" markerWidth="4" markerHeight="3" orient="auto">
+                  <path d="M 0 3 L 6 0 L 6 6 z" stroke="rgb(51, 51, 51) " fill="rgb(51, 51, 51)"/>
+                </marker>
+              </defs>
+
               <g className="svg-pan-zoom_viewport" id="canvas">
                 <image ref={bck_image => {this.bck_image=bck_image}}
                   id="bck-img" xlinkHref={this.state.selectedFile} x="0" y="0"
@@ -1337,6 +1561,21 @@ class Draw extends Component {
                 title="Move selected line"
                 alt="Move selected line" >
                 Move
+              </div>
+              <div className="interface-button" onClick={()=>this.startQuote('vertical')}
+                title="Move selected line"
+                alt="Move selected line" >
+                Quote Y
+              </div>
+              <div className="interface-button" onClick={()=>this.startQuote('horizontal')}
+                title="Move selected line"
+                alt="Move selected line" >
+                Quote X
+              </div>
+              <div className="interface-button" onClick={()=>this.startQuote('aligned')}
+                title="Move selected line"
+                alt="Move selected line" >
+                Quote aligned
               </div>
               {!this.state.no_snapping &&
               <div className="interface-button" title="Click to turn off"
@@ -1402,16 +1641,16 @@ class Draw extends Component {
                   <SimpleLineIcon size="Small" name="arrow-down"/>
                 </div>
               </div>
-              </div>
-              {this.state.toDo.image && <div id="image-layer" className="polyline-layer">
-                <div className="slidecontainer">
-                 <label htmlFor="myRange">Rotate image</label>
-                 <input
-                   type="number" min="0" max="360" defaultValue={this.state.img_rot}
-                   className="slider" id="myRange" step="0.01"
-                   onChange={this.image_rotate.bind(this)}
-                   />
-               </div>
+            </div>
+            {this.state.toDo.image && <div id="image-layer" className="polyline-layer">
+              <div className="slidecontainer">
+               <label htmlFor="myRange">Rotate image</label>
+               <input
+                 type="number" min="0" max="360" defaultValue={this.state.img_rot}
+                 className="slider" id="myRange" step="0.01"
+                 onChange={this.image_rotate.bind(this)}
+                 />
+             </div>
              </div>}
               {this.state.polylines.slice().reverse().map(el =>
                 <ListPoly
@@ -1430,6 +1669,49 @@ class Draw extends Component {
                   selectedPoly={this.state.active_polyline ? this.state.active_polyline.id : ''}
                   />
               )}
+              {this.state.quotes.length>0 &&
+              <div id="quotes">
+                <div id="quote-title">
+                  <div>Quotes</div>
+                  {this.state.show_quotes &&
+                    <div
+                      onClick={this.hide_quotes.bind(this)}
+                      className="hide-show-quotes">
+                      Hide
+                    </div>
+                  }{!this.state.show_quotes &&
+                    <div
+                      onClick={this.show_quotes.bind(this)}
+                      className="hide-show-quotes">
+                      Show
+                    </div>
+                  }
+                </div>
+                  {this.state.show_quotes && this.state.quotes.map(el=>{
+                    return (
+                      <div className="quote-item" key={el.id}
+                        onMouseOver={()=>this.select_quote(el.id)}
+                        onMouseOut={()=>this.deselect_quote()}>
+                      <div className="input-quote">
+                          <input type="text" id="quote-info" value={el.quote_definition}
+                            placeholder="Description"
+                            onChange={(e)=>this.changeQuoteDescritpion(e, el.id)}></input>
+                        </div>
+                        <div>
+                          {el.distance.toFixed(2)} cm
+                        </div>
+                        <div
+                          className="trash-quote icon-edit-layer"
+                          onClick={() => this.deleteQuote(el.id)}
+                          title="Delete this quote" >
+                          <SimpleLineIcon size="Small" name="trash"/>
+                        </div>
+                      </div>
+                    )
+                  })}
+              </div>
+              }
+
           </section>
           <div className="basic-info">
             Double-left-click to draw a point, single left-click and hold to pan the view,
