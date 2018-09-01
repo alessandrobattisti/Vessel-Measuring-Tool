@@ -291,14 +291,14 @@ function importSvg(lines, canvas, id, x, y){
 			if(line.getAttribute('type')==='handle_length'){
 				new_line.el.dataset.handle_n = line.dataset.handle_n
 			}
-			if(line.getAttribute('type')==='quote'){
+			if(line.getAttribute('type')==='dimension'){
 				new_line.distance = parseFloat(line.dataset.distance)
 				new_line.el.dataset.distance = parseFloat(line.dataset.distance)
 				new_line.quotation_type = line.dataset.quotation_type
 				new_line.el.dataset.quotation_type = line.dataset.quotation_type
-				if(line.dataset.quote_definition){
-					new_line.el.dataset.quote_definition = line.dataset.quote_definition
-					new_line.quote_definition = line.dataset.quote_definition
+				if(line.dataset.dimension_definition){
+					new_line.el.dataset.dimension_definition = line.dataset.dimension_definition
+					new_line.dimension_definition = line.dataset.dimension_definition
 				}
 			}
 			id++

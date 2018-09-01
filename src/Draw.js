@@ -29,9 +29,9 @@ class Draw extends Component {
     this.unselect_polyline = this.unselect_polyline.bind(this)
     this.selectList = this.selectList.bind(this)
     this.addVector = this.addVector.bind(this)
-    this.calcQuote = this.calcQuote.bind(this)
-    this.previewQuotation = this.previewQuotation.bind(this)
-    this.addQuotation = this.addQuotation.bind(this)
+    this.calcDimension = this.calcDimension.bind(this)
+    this.previewDimension = this.previewDimension.bind(this)
+    this.addDimension = this.addDimension.bind(this)
   }
   state = {
     polylines: [],
@@ -60,8 +60,8 @@ class Draw extends Component {
     content_volume2:null,
     vessel_specific_weight:2,
     no_snapping:false,
-    quotes:[],
-    show_quotes:true
+    dimensions:[],
+    show_dimensions:true
   }
   id = 0
   not_id = 0
@@ -106,7 +106,7 @@ class Draw extends Component {
             point.setSize( e )
           })
         })
-        this.state.quotes.forEach(function(poly){
+        this.state.dimensions.forEach(function(poly){
           poly.zoom = e
           poly.setSize( e )
         })
@@ -114,9 +114,9 @@ class Draw extends Component {
           this.metric.zoom = e
           this.metric.setSize( e )
         }
-        if(this.quote){
-          this.quote.zoom = e
-          this.quote.setSize( e )
+        if(this.dimension){
+          this.dimension.zoom = e
+          this.dimension.setSize( e )
         }
         if(this.vector){
           this.vector.zoom = e
@@ -524,20 +524,20 @@ class Draw extends Component {
     if(handle_length.length === 1){
       this.handleVolume()
     }
-    //update quotation distances
-    if(this.state.quotes.length>0){
-      let new_q = this.state.quotes.map(quote => {
-        if(quote.quotation_type==='horizontal'){
-          quote.distance = Math.abs(quote.points[0].cx - quote.points[1].cx) * this.scale * 10
-        }else if(quote.quotation_type==='vertical'){
-          quote.distance = Math.abs(quote.points[0].cy - quote.points[1].cy) * this.scale * 10
+    //update dimension distances
+    if(this.state.dimensions.length>0){
+      let new_q = this.state.dimensions.map(dimension => {
+        if(dimension.dimension_type==='horizontal'){
+          dimension.distance = Math.abs(dimension.points[0].cx - dimension.points[1].cx) * this.scale * 10
+        }else if(dimension.dimension_type==='vertical'){
+          dimension.distance = Math.abs(dimension.points[0].cy - dimension.points[1].cy) * this.scale * 10
         }else{
-          quote.distance = distance([quote.points[1].cx, quote.points[1].cy], [quote.points[0].cx, quote.points[0].cy]) * this.scale * 10
+          dimension.distance = distance([dimension.points[1].cx, dimension.points[1].cy], [dimension.points[0].cx, dimension.points[0].cy]) * this.scale * 10
         }
-        quote.el.dataset.distance = quote.distance
-        return quote
+        dimension.el.dataset.distance = dimension.distance
+        return dimension
       })
-      this.setState({quotes:new_q})
+      this.setState({dimensions:new_q})
     }
   }
 
@@ -1057,21 +1057,21 @@ class Draw extends Component {
     }
   }
   //////////////////////////////////////////////////////////////////////////////
-  //                                  QUOTE                                   //
+  //                                Dimension                                 //
   //////////////////////////////////////////////////////////////////////////////
-  startQuote(type){
+  startDimension(type){
     if(!this.scale){
-      this.addNotification('You need a to define a reference scale to quote')
+      this.addNotification('You need a to define a reference scale to add dimensions')
       return
     }
-    if(this.quote){
-      this.canvas.removeChild(this.quote.el)
+    if(this.dimension){
+      this.canvas.removeChild(this.dimension.el)
     }
-    this.setState({quotation_type:type})
-    this.quote = new Polyline({
+    this.setState({dimension_type:type})
+    this.dimension = new Polyline({
       points: [],
       id: String(this.id),
-      type: 'quote',
+      type: 'dimension',
       selected: true,
       canvas: this.canvas,
       offsetX: this.x,
@@ -1079,72 +1079,72 @@ class Draw extends Component {
       currentZoom: this.panZoomTiger.getZoom()
     })
     this.id++
-    this.quote.el.classList.add('quote')
-    this.quote.el.classList.remove('editing')
-    this.quote.el.stroke = 'rgb(51, 51, 51)'
-    this.quote.stroke = 'rgb(51, 51, 51)'
+    this.dimension.el.classList.add('dimension')
+    this.dimension.el.classList.remove('editing')
+    this.dimension.el.stroke = 'rgb(51, 51, 51)'
+    this.dimension.stroke = 'rgb(51, 51, 51)'
     this.addCursorPoint()
-    this.quote.softStopEditing()
-    this.canvas.addEventListener('dblclick', this.calcQuote)
+    this.dimension.softStopEditing()
+    this.canvas.addEventListener('dblclick', this.calcDimension)
   }
 
-  calcQuote(e){
-    this.quote.add_point(e)
-    if(this.quote.points.length>=2){
-        let deltaX = Math.abs(this.quote.points[1].cx - this.quote.points[0].cx) * this.scale * 10
-        let deltaY = Math.abs(this.quote.points[1].cy - this.quote.points[0].cy) * this.scale * 10
-        let dist = distance([this.quote.points[1].cx, this.quote.points[1].cy], [this.quote.points[0].cx, this.quote.points[0].cy]) * this.scale * 10
+  calcDimension(e){
+    this.dimension.add_point(e)
+    if(this.dimension.points.length>=2){
+        let deltaX = Math.abs(this.dimension.points[1].cx - this.dimension.points[0].cx) * this.scale * 10
+        let deltaY = Math.abs(this.dimension.points[1].cy - this.dimension.points[0].cy) * this.scale * 10
+        let dist = distance([this.dimension.points[1].cx, this.dimension.points[1].cy], [this.dimension.points[0].cx, this.dimension.points[0].cy]) * this.scale * 10
         //clenup
-        this.canvas.removeEventListener('dblclick', this.calcQuote)
+        this.canvas.removeEventListener('dblclick', this.calcDimension)
         this.removeCursorPoint()
-        this.quote.stopEditing({code:"Escape"})
+        this.dimension.stopEditing({code:"Escape"})
         //place on drawing
-        if(this.state.quotation_type==='horizontal'){
-          this.setState({current_quotation:deltaX})
-          this.quote.points[1].cy = this.quote.points[0].cy
-        }else if(this.state.quotation_type==='vertical'){
-          this.setState({current_quotation:deltaY})
-          this.quote.points[0].cx = this.quote.points[1].cx
+        if(this.state.dimension_type==='horizontal'){
+          this.setState({current_dimension:deltaX})
+          this.dimension.points[1].cy = this.dimension.points[0].cy
+        }else if(this.state.dimension_type==='vertical'){
+          this.setState({current_dimension:deltaY})
+          this.dimension.points[0].cx = this.dimension.points[1].cx
         }else{
-          this.setState({current_quotation:dist})
+          this.setState({current_dimension:dist})
           this.invert = 1
-          if(this.quote.points[0].cx < this.quote.points[1].cx &&this.quote.points[0].cy > this.quote.points[1].cy){
+          if(this.dimension.points[0].cx < this.dimension.points[1].cx &&this.dimension.points[0].cy > this.dimension.points[1].cy){
             this.invert = -1
           }
-          if(this.quote.points[0].cx > this.quote.points[1].cx && this.quote.points[0].cy < this.quote.points[1].cy){
+          if(this.dimension.points[0].cx > this.dimension.points[1].cx && this.dimension.points[0].cy < this.dimension.points[1].cy){
             this.invert = -1
           }
         }
-        this.quote.el.setAttribute('marker-start','url(#red-arrowhead2)')
-        this.quote.el.setAttribute('marker-end','url(#red-arrowhead)')
-        this.canvas.addEventListener('mousemove', this.previewQuotation)
-        this.canvas.addEventListener('dblclick', this.addQuotation)
+        this.dimension.el.setAttribute('marker-start','url(#red-arrowhead2)')
+        this.dimension.el.setAttribute('marker-end','url(#red-arrowhead)')
+        this.canvas.addEventListener('mousemove', this.previewDimension)
+        this.canvas.addEventListener('dblclick', this.addDimension)
         recreate_snapping_points(this.state.polylines)
     }
   }
 
-  previewQuotation(e){
+  previewDimension(e){
     const matrix = this.canvas.transform.baseVal[0].matrix
     if(!this.startX){
-      this.startX = this.quote.points[1].cx
-      this.startY = this.quote.points[1].cy
+      this.startX = this.dimension.points[1].cx
+      this.startY = this.dimension.points[1].cy
     }
-    const startX = this.quote.points[1].cx
+    const startX = this.dimension.points[1].cx
     const currentX = ((e.pageX-matrix.e-this.x)/matrix.a)
-    const startY = this.quote.points[1].cy
+    const startY = this.dimension.points[1].cy
     const currentY = ((e.pageY-matrix.f-this.y)/matrix.a)
-    if(this.state.quotation_type==='horizontal'){
-      this.quote.move([0, currentY-startY])
-    }else if(this.state.quotation_type==='vertical'){
-      this.quote.move([currentX-startX, 0])
+    if(this.state.dimension_type==='horizontal'){
+      this.dimension.move([0, currentY-startY])
+    }else if(this.state.dimension_type==='vertical'){
+      this.dimension.move([currentX-startX, 0])
     }else{
-      let slope = -1*((this.quote.points[1].cx - this.quote.points[0].cx) / (this.quote.points[1].cy - this.quote.points[0].cy))
+      let slope = -1*((this.dimension.points[1].cx - this.dimension.points[0].cx) / (this.dimension.points[1].cy - this.dimension.points[0].cy))
       let dist  = (this.startX - currentX ) * -1
       if(slope === 0){
-        this.quote.move([dist,0])
+        this.dimension.move([dist,0])
       }else if(!isFinite(slope)){
         dist  = (this.startY - currentY ) * -1
-        this.quote.move([0,dist])
+        this.dimension.move([0,dist])
       }else {
         if(slope < -2 || slope > 2){
           dist  = (this.startY - currentY ) * this.invert
@@ -1152,24 +1152,24 @@ class Draw extends Component {
         //https://www.geeksforgeeks.org/find-points-at-a-given-distance-on-a-line-of-given-slope/
         const dx = (dist / Math.sqrt(1 + (slope * slope)));
         const dy = slope * dx;
-        this.quote.move([dx, dy])
+        this.dimension.move([dx, dy])
       }
       this.startX = currentX
       this.startY = currentY
     }
   }
 
-  addQuotation(e){
+  addDimension(e){
     //cleanup
-    this.canvas.removeEventListener('mousemove', this.previewQuotation)
-    this.canvas.removeEventListener('dblclick', this.addQuotation)
+    this.canvas.removeEventListener('mousemove', this.previewDimension)
+    this.canvas.removeEventListener('dblclick', this.addDimension)
     this.startX = null
     //copy and save
-    let quotes = this.state.quotes
-    let quote = new Polyline({
+    let dimensions = this.state.dimensions
+    let dimension = new Polyline({
       points: [],
       id: String(this.id),
-      type: 'quote',
+      type: 'dimension',
       selected: false,
       canvas: this.canvas,
       offsetX: this.x,
@@ -1177,56 +1177,56 @@ class Draw extends Component {
       currentZoom: this.panZoomTiger.getZoom()
     })
     this.id++
-    quote.el.classList.add('quote')
-    quote.el.classList.remove('editing')
-    quote.el.stroke = 'rgb(51, 51, 51)'
-    quote.stroke = 'rgb(51, 51, 51)'
-    quote.el.setAttribute('marker-start','url(#red-arrowhead2)')
-    quote.el.setAttribute('marker-end','url(#red-arrowhead)')
-    quote.appendPoint([this.quote.points[0].cx, this.quote.points[0].cy])
-    quote.appendPoint([this.quote.points[1].cx, this.quote.points[1].cy])
-    quote.distance = this.state.current_quotation
-    quote.quotation_type = this.state.quotation_type
-    quote.el.dataset.distance = this.state.current_quotation
-    quote.el.dataset.quotation_type = this.state.quotation_type
-    quote.el.setAttribute('type', 'quote')
-    quote.stopEditing({code:"Escape"})
-    quotes.push(quote)
-    this.setState({quotes})
+    dimension.el.classList.add('dimension')
+    dimension.el.classList.remove('editing')
+    dimension.el.stroke = 'rgb(51, 51, 51)'
+    dimension.stroke = 'rgb(51, 51, 51)'
+    dimension.el.setAttribute('marker-start','url(#red-arrowhead2)')
+    dimension.el.setAttribute('marker-end','url(#red-arrowhead)')
+    dimension.appendPoint([this.dimension.points[0].cx, this.dimension.points[0].cy])
+    dimension.appendPoint([this.dimension.points[1].cx, this.dimension.points[1].cy])
+    dimension.distance = this.state.current_dimension
+    dimension.dimension_type = this.state.dimension_type
+    dimension.el.dataset.distance = this.state.current_dimension
+    dimension.el.dataset.dimension_type = this.state.dimension_type
+    dimension.el.setAttribute('type', 'dimension')
+    dimension.stopEditing({code:"Escape"})
+    dimensions.push(dimension)
+    this.setState({dimensions})
     this.globalStopEditingMode()
     //cleanup
-    this.canvas.removeChild(this.quote.el)
-    this.quote = null
+    this.canvas.removeChild(this.dimension.el)
+    this.dimension = null
   }
 
-  deleteQuote(id){
-    this.canvas.removeChild(this.state.quotes.filter(el=>el.id===id)[0].el)
-    this.setState({quotes:this.state.quotes.filter(el=>el.id!==id)})
+  deleteDimension(id){
+    this.canvas.removeChild(this.state.dimensions.filter(el=>el.id===id)[0].el)
+    this.setState({dimensions:this.state.dimensions.filter(el=>el.id!==id)})
   }
 
-  select_quote(id){
-    this.state.quotes.forEach(el => el.el.classList.remove('active'))
-    this.state.quotes.filter(el=>el.id===id)[0].el.classList.add('active')
+  select_dimension(id){
+    this.state.dimensions.forEach(el => el.el.classList.remove('active'))
+    this.state.dimensions.filter(el=>el.id===id)[0].el.classList.add('active')
   }
 
-  deselect_quote(){
-    this.state.quotes.forEach(el => el.el.classList.remove('active'))
+  deselect_dimension(){
+    this.state.dimensions.forEach(el => el.el.classList.remove('active'))
   }
 
-  hide_quotes(){
-    this.setState({show_quotes:false})
-    this.state.quotes.forEach(el => this.canvas.removeChild(el.el))
+  hide_dimensions(){
+    this.setState({show_dimensions:false})
+    this.state.dimensions.forEach(el => this.canvas.removeChild(el.el))
   }
 
-  show_quotes(){
-    this.setState({show_quotes:true})
-    this.state.quotes.forEach(el => this.canvas.appendChild(el.el))
+  show_dimensions(){
+    this.setState({show_dimensions:true})
+    this.state.dimensions.forEach(el => this.canvas.appendChild(el.el))
   }
 
-  changeQuoteDescritpion(e, id){
-    let quote = this.state.quotes.filter(el=>el.id===id)[0]
-    quote.quote_definition = e.target.value
-    quote.el.dataset.quote_definition = e.target.value
+  changeDimensionDescritpion(e, id){
+    let dimension = this.state.dimensions.filter(el=>el.id===id)[0]
+    dimension.dimension_definition = e.target.value
+    dimension.el.dataset.dimension_definition = e.target.value
   }
   //////////////////////////////////////////////////////////////////////////////
   //                                  IMPORT                                  //
@@ -1354,19 +1354,19 @@ class Draw extends Component {
         this.maxFill.el.classList.remove('editing')
         this.maxFill.id = 'max_fill'
       }
-      //quote
-      let quote = new_lines.filter(el => el.type === 'quote')
-      let state_quotes = this.state.quotes
-      if(quote.length > 0){
-        quote.forEach(q=>{
-          q.el.classList.add('quote')
+      //dimension
+      let dimension = new_lines.filter(el => el.type === 'dimension')
+      let state_dimensions = this.state.dimensions
+      if(dimension.length > 0){
+        dimension.forEach(q=>{
+          q.el.classList.add('dimension')
           q.el.classList.remove('editing')
           q.el.setAttribute('marker-start','url(#red-arrowhead2)')
           q.el.setAttribute('marker-end','url(#red-arrowhead)')
-          q.el.setAttribute('type', 'quote')
-          state_quotes.push(q)
+          q.el.setAttribute('type', 'dimension')
+          state_dimensions.push(q)
         })
-        this.setState({quotes:state_quotes})
+        this.setState({dimensions:state_dimensions})
       }
 
       //add handle number to form and then state
@@ -1380,7 +1380,7 @@ class Draw extends Component {
       //save to state
       this.setState({polylines:this.state.polylines.concat(new_lines.filter(
         el => el.type !== 'metric').filter(el => el.type !== 'center').filter(
-          el => el.type !== 'max_fill').filter(el => el.type !== 'quote'))
+          el => el.type !== 'max_fill').filter(el => el.type !== 'dimension'))
         }, () => {
         this.globalStopEditingMode()
         //simulate esc press
@@ -1562,20 +1562,20 @@ class Draw extends Component {
                 alt="Move selected line" >
                 Move
               </div>
-              <div className="interface-button" onClick={()=>this.startQuote('vertical')}
+              <div className="interface-button" onClick={()=>this.startDimension('vertical')}
                 title="Move selected line"
                 alt="Move selected line" >
-                Quote Y
+                Dimension Y
               </div>
-              <div className="interface-button" onClick={()=>this.startQuote('horizontal')}
+              <div className="interface-button" onClick={()=>this.startDimension('horizontal')}
                 title="Move selected line"
                 alt="Move selected line" >
-                Quote X
+                Dimension X
               </div>
-              <div className="interface-button" onClick={()=>this.startQuote('aligned')}
+              <div className="interface-button" onClick={()=>this.startDimension('aligned')}
                 title="Move selected line"
                 alt="Move selected line" >
-                Quote aligned
+                Dimension aligned
               </div>
               {!this.state.no_snapping &&
               <div className="interface-button" title="Click to turn off"
@@ -1669,41 +1669,41 @@ class Draw extends Component {
                   selectedPoly={this.state.active_polyline ? this.state.active_polyline.id : ''}
                   />
               )}
-              {this.state.quotes.length>0 &&
-              <div id="quotes">
-                <div id="quote-title">
-                  <div>Quotes</div>
-                  {this.state.show_quotes &&
+              {this.state.dimensions.length>0 &&
+              <div id="dimensions">
+                <div id="dimension-title">
+                  <div>Dimensions</div>
+                  {this.state.show_dimensions &&
                     <div
-                      onClick={this.hide_quotes.bind(this)}
-                      className="hide-show-quotes">
+                      onClick={this.hide_dimensions.bind(this)}
+                      className="hide-show-dimensions">
                       Hide
                     </div>
-                  }{!this.state.show_quotes &&
+                  }{!this.state.show_dimensions &&
                     <div
-                      onClick={this.show_quotes.bind(this)}
-                      className="hide-show-quotes">
+                      onClick={this.show_dimensions.bind(this)}
+                      className="hide-show-dimensions">
                       Show
                     </div>
                   }
                 </div>
-                  {this.state.show_quotes && this.state.quotes.map(el=>{
+                  {this.state.show_dimensions && this.state.dimensions.map(el=>{
                     return (
-                      <div className="quote-item" key={el.id}
-                        onMouseOver={()=>this.select_quote(el.id)}
-                        onMouseOut={()=>this.deselect_quote()}>
-                      <div className="input-quote">
-                          <input type="text" id="quote-info" value={el.quote_definition}
+                      <div className="dimension-item" key={el.id}
+                        onMouseOver={()=>this.select_dimension(el.id)}
+                        onMouseOut={()=>this.deselect_dimension()}>
+                      <div className="input-dimension">
+                          <input type="text" id="dimension-info" value={el.dimension_definition}
                             placeholder="Description"
-                            onChange={(e)=>this.changeQuoteDescritpion(e, el.id)}></input>
+                            onChange={(e)=>this.changeDimensionDescritpion(e, el.id)}></input>
                         </div>
                         <div>
                           {el.distance.toFixed(2)} cm
                         </div>
                         <div
-                          className="trash-quote icon-edit-layer"
-                          onClick={() => this.deleteQuote(el.id)}
-                          title="Delete this quote" >
+                          className="trash-dimension icon-edit-layer"
+                          onClick={() => this.deleteDimension(el.id)}
+                          title="Delete this dimension" >
                           <SimpleLineIcon size="Small" name="trash"/>
                         </div>
                       </div>

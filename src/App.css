@@ -330,7 +330,7 @@ polyline:hover {
   stroke: rgb(6, 255, 0) !important;
 }
 
-#metric, #center, #max_fill, .quote {
+#metric, #center, #max_fill, .dimension {
   cursor: auto!important;
   pointer-events: none!important;
 }
@@ -417,18 +417,18 @@ circle, rect {
 }
 
 /*/////////////////////////////////////////////////////////////////////////////*/
-/*///////////////////////////////    QUOTES    ////////////////////////////////*/
+/*///////////////////////////////    dimensionS    ////////////////////////////////*/
 /*/////////////////////////////////////////////////////////////////////////////*/
-.quote:hover {
+.dimension:hover {
   stroke:rgb(123, 207, 225) !important
 }
 
-#quotes {
+#dimensions {
   width: 100%;
   margin-top: 10px;
 }
 
-#quote-title {
+#dimension-title {
   line-height: 28px;
   border-top: 1px solid white;
   padding: 5px;
@@ -439,18 +439,18 @@ circle, rect {
   display: flex;
 }
 
-#quote-title > div:first-child {
+#dimension-title > div:first-child {
   flex: 10
 }
 
-.hide-show-quotes {
+.hide-show-dimensions {
   text-align: right;
   flex: 1;
   font-weight: normal;
   cursor: pointer;
 }
 
-.quote-item {
+.dimension-item {
   display: flex;
   padding: 4px 0;
   color: white;
@@ -458,38 +458,38 @@ circle, rect {
   font-size: 14px;
 }
 
-.quote-item:hover {
+.dimension-item:hover {
   background: rgb(88, 88, 88);
 }
 
-.quote-item-active {
+.dimension-item-active {
   background: rgb(88, 88, 88);
 }
 
-.quote-item > div {
+.dimension-item > div {
   flex: 1;
   box-sizing: border-box;
   line-height: 29px;
 }
 
-.trash-quote {
+.trash-dimension {
   flex: unset!important;
   width: auto!important;
   margin-right: 10px;
 }
 
-.trash-quote > div{
+.trash-dimension > div{
   font-size: 12px!important;
   cursor: pointer;
 }
 
-.input-quote {
+.input-dimension {
   flex: 1 1 !important;
   display: flex;
   margin: 0 10px;
 }
 
-.input-quote input {
+.input-dimension input {
   width: 100%;
   box-sizing: border-box;
   background: #fbfbfb;
