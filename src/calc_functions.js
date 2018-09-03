@@ -1,4 +1,4 @@
-import Polyline from './svg_classes/Polyline'
+import {Polyline, Dimension} from './svg_classes/Polyline'
 const d3 = require('d3-polygon')
 
 //http://paulbourke.net/geometry/pointlineplane/javascript.txt
@@ -267,7 +267,7 @@ function importSvg(lines, canvas, id, x, y){
 	let img_info
 	lines.forEach(function(line){
 		if(line.localName === 'polyline'){
-			let new_line = new Polyline({
+			let obj = {
 				points: [],
 				id: String(id),
 				type: line.getAttribute('type'),
@@ -276,7 +276,13 @@ function importSvg(lines, canvas, id, x, y){
 				offsetX: x,
 				offsetY: y,
 				currentZoom: window.zoom
-			})
+			}
+			let new_line
+			if(line.getAttribute('type')==='dimension'){
+				new_line = new Dimension(obj)
+			}else{
+				new_line = new Polyline(obj)
+			}
 			let stroke = line.dataset.stroke ? line.dataset.stroke : 'black'
 			new_line.stroke = stroke
 			new_line.el.style.stroke = stroke

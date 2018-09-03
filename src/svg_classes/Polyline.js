@@ -2,7 +2,7 @@ import Point from './Point'
 import MidPoint from './MidPoint'
 import {cleanedPoly, distance} from './../calc_functions'
 
-export default class Poly {
+class Polyline {
 
   constructor(obj) {
     this.points = obj.points
@@ -258,3 +258,18 @@ export default class Poly {
   }
 
 }
+
+class Dimension extends Polyline {
+  constructor(obj){
+    super(obj)
+    this.el.classList.add('dimension')
+    this.el.classList.remove('editing')
+    this.el.stroke = 'rgb(51, 51, 51)'
+    this.stroke = 'rgb(51, 51, 51)'
+    this.el.setAttribute('marker-start','url(#red-arrowhead2)')
+    this.el.setAttribute('marker-end','url(#red-arrowhead)')
+    this.el.setAttribute('type', 'dimension')
+  }
+}
+
+export {Polyline, Dimension}

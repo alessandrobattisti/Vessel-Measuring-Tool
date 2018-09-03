@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import './responsive.css';
-import Polyline from './svg_classes/Polyline'
+import {Polyline, Dimension} from './svg_classes/Polyline'
 import Point from './svg_classes/Point'
 import ListPoly from './components/listPoly'
 import Notification from './components/Notification'
@@ -69,6 +69,19 @@ class Draw extends Component {
   metric = null
   rotAxis = null
 
+  getObj(id, type, selected){
+    return {
+      points: [],
+      id: id,
+      type: type,
+      selected: selected,
+      canvas: this.canvas,
+      offsetX: this.x,
+      offsetY: this.y,
+      currentZoom: this.panZoomTiger.getZoom()
+    }
+  }
+
   componentDidMount(){
     //init canvas
     this.canvas = document.getElementById('canvas')
@@ -110,26 +123,10 @@ class Draw extends Component {
           poly.zoom = e
           poly.setSize( e )
         })
-        if(this.metric){
-          this.metric.zoom = e
-          this.metric.setSize( e )
-        }
-        if(this.dimension){
-          this.dimension.zoom = e
-          this.dimension.setSize( e )
-        }
-        if(this.vector){
-          this.vector.zoom = e
-          this.vector.setSize( e )
-        }
-        if(this.rotAxis){
-          this.rotAxis.zoom = e
-          this.rotAxis.setSize( e )
-        }
-        if(this.maxFill){
-          this.maxFill.zoom = e
-          this.maxFill.setSize( e )
-        }
+
+        let dim = [this.metric, this.dimension, this.vector, this.rotAxis, this.maxFill]
+        dim.forEach(d => { if(d){ d.zoom = e;  d.setSize(e) } })
+
         this.new_point.zoom = e
         this.new_point.setSize( e )
       }.bind(this)
@@ -172,16 +169,7 @@ class Draw extends Component {
 
     this.addCursorPoint()
     const new_polylines = this.state.polylines
-    const polyline = new Polyline({
-      points: [],
-      id: String(this.id),
-      type: type,
-      selected: true,
-      canvas: this.canvas,
-      offsetX: this.x,
-      offsetY: this.y,
-      currentZoom: this.panZoomTiger.getZoom()
-    })
+    const polyline = new Polyline(this.getObj( String(this.id), type, true ))
     //save
     polyline.el.setAttribute('type', type)
     polyline.el.dataset.stroke = polyline.el.stroke
@@ -308,27 +296,18 @@ class Draw extends Component {
       }
       this.state.active_polyline.stopEditing({'code':'Escape'})
     }
-    if(this.maxFill && this.maxFill.is_editing){
-      this.canvas.removeEventListener('dblclick', this.addMaxFill)
-      this.maxFill.stopEditing({'code':'Escape'})
-      this.removeCursorPoint()
-      this.canvas.removeChild(this.maxFill.el)
-      this.maxFill = null;
-    }
-    if(this.metric && this.metric.is_editing){
-      this.canvas.removeEventListener('dblclick', this.addMetric)
-      this.metric.stopEditing({'code':'Escape'})
-      this.removeCursorPoint()
-      this.canvas.removeChild(this.metric.el)
-      this.metric = null;
-    }
-    if(this.rotAxis && this.rotAxis.is_editing){
-      this.canvas.removeEventListener('dblclick', this.addRotAxis)
-      this.rotAxis.stopEditing({'code':'Escape'})
-      this.removeCursorPoint()
-      this.canvas.removeChild(this.rotAxis.el)
-      this.rotAxis = null;
-    }
+
+    let dim = [this.maxFill, this.metric, this.rotAxis]
+    dim.forEach(d => {
+      if(d && d.is_editing){
+        this.canvas.removeEventListener('dblclick', d)
+        d.stopEditing({'code':'Escape'})
+        this.removeCursorPoint()
+        this.canvas.removeChild(d.el)
+        d = null;
+      }
+    })
+
     this.addClickSelectEvent()
   }
 
@@ -487,7 +466,7 @@ class Draw extends Component {
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  //              ADD REFERENCE SCALE rotation axis AND MAX FILL               //
+  //             ADD REFERENCE SCALE rotation axis AND MAX FILL               //
   //////////////////////////////////////////////////////////////////////////////
 
   metricForm(obj){
@@ -550,16 +529,7 @@ class Draw extends Component {
       this.updateToDo('maxFill', false)
     }
     //create new maxFill polyline
-    this.maxFill = new Polyline({
-      points: [],
-      id: 'max_fill',
-      type: 'max_fill',
-      selected: false,
-      canvas: this.canvas,
-      offsetX: this.x,
-      offsetY: this.y,
-      currentZoom: this.panZoomTiger.getZoom()
-    })
+    this.maxFill = new Polyline(this.getObj( "max_fill", "max_fill", false ))
     //start editing
     this.addCursorPoint()
     this.canvas.addEventListener('dblclick', this.addMaxFill)
@@ -593,16 +563,7 @@ class Draw extends Component {
       this.updateToDo('metric', false)
     }
     //create new metric polyline
-    this.metric = new Polyline({
-      points: [],
-      id: 'metric',
-      type: 'metric',
-      selected: false,
-      canvas: this.canvas,
-      offsetX: this.x,
-      offsetY: this.y,
-      currentZoom: this.panZoomTiger.getZoom()
-    })
+    this.metric = new Polyline(this.getObj( "metric", "metric", false ))
     //start editing
     this.removeClickSelectEvent()
     this.addCursorPoint()
@@ -652,16 +613,7 @@ class Draw extends Component {
       this.updateToDo('rotAxis', false)
     }
     //create rotation axis polyline
-    this.rotAxis = new Polyline({
-      points: [],
-      id: 'center',
-      type: 'center',
-      selected: true,
-      canvas: this.canvas,
-      offsetX: this.x,
-      offsetY: this.y,
-      currentZoom: this.panZoomTiger.getZoom()
-    })
+    this.rotAxis = new Polyline(this.getObj( "center", "center", true ))
     //start editing
     this.rotAxis.is_editing = true
     this.addCursorPoint()
@@ -809,17 +761,7 @@ class Draw extends Component {
     //instantiate polyline list to edit
     const new_polylines = this.state.polylines
     //create a new polyline
-    let polyline = new Polyline({
-      points: [],
-      id: String(this.id),
-      type: 'other',
-      selected: false,
-      canvas: this.canvas,
-      offsetX: this.x,
-      offsetY: this.y,
-      currentZoom: this.panZoomTiger.getZoom()
-      }
-    )
+    let polyline = new Polyline(this.getObj( String(this.id), "other", false ))
     //loop over the polyine to break and add point to new polyline until you get to the breaking point
     this.state.active_polyline.points.forEach(function(point) {
       polyline.appendPoint([point.cx, point.cy])
@@ -831,16 +773,7 @@ class Draw extends Component {
         polyline.draw()
         polyline.stopEditing({'code':'Escape'})
         //create a new polyline with starting point the breaking point
-        polyline = new Polyline({
-          points: [],
-          id: String(this.id),
-          type: 'other',
-          selected: true,
-          canvas: this.canvas,
-          offsetX: this.x,
-          offsetY: this.y,
-          currentZoom: this.panZoomTiger.getZoom()
-          })
+        polyline = new Polyline(this.getObj( String(this.id), "other", true ))
         polyline.appendPoint([point.cx, point.cy])
       }
     }.bind(this))
@@ -1024,16 +957,7 @@ class Draw extends Component {
       this.addNotification('No line selected')
       return
     }
-    this.vector = new Polyline({
-      points: [],
-      id: 'vector',
-      type: 'vector',
-      selected: true,
-      canvas: this.canvas,
-      offsetX: this.x,
-      offsetY: this.y,
-      currentZoom: this.panZoomTiger.getZoom()
-    })
+    this.vector = new Polyline(this.getObj( "vector", "vector", true ))
     this.addCursorPoint()
     this.vector.softStopEditing()
     this.canvas.addEventListener('dblclick', this.addVector)
@@ -1068,21 +992,8 @@ class Draw extends Component {
       this.canvas.removeChild(this.dimension.el)
     }
     this.setState({dimension_type:type})
-    this.dimension = new Polyline({
-      points: [],
-      id: String(this.id),
-      type: 'dimension',
-      selected: true,
-      canvas: this.canvas,
-      offsetX: this.x,
-      offsetY: this.y,
-      currentZoom: this.panZoomTiger.getZoom()
-    })
+    this.dimension = new Dimension(this.getObj( String(this.id), "dimension", false ))
     this.id++
-    this.dimension.el.classList.add('dimension')
-    this.dimension.el.classList.remove('editing')
-    this.dimension.el.stroke = 'rgb(51, 51, 51)'
-    this.dimension.stroke = 'rgb(51, 51, 51)'
     this.addCursorPoint()
     this.dimension.softStopEditing()
     this.canvas.addEventListener('dblclick', this.calcDimension)
@@ -1090,33 +1001,28 @@ class Draw extends Component {
 
   calcDimension(e){
     this.dimension.add_point(e)
+    const p0 = this.dimension.points[0]
+    const p1 = this.dimension.points[1]
     if(this.dimension.points.length>=2){
-        let deltaX = Math.abs(this.dimension.points[1].cx - this.dimension.points[0].cx) * this.scale * 10
-        let deltaY = Math.abs(this.dimension.points[1].cy - this.dimension.points[0].cy) * this.scale * 10
-        let dist = distance([this.dimension.points[1].cx, this.dimension.points[1].cy], [this.dimension.points[0].cx, this.dimension.points[0].cy]) * this.scale * 10
-        //clenup
+        const deltaX = Math.abs(p1.cx - p0.cx) * this.scale * 10
+        const deltaY = Math.abs(p1.cy - p0.cy) * this.scale * 10
+        const dist = distance(
+          [p1.cx, p1.cy],
+          [p0.cx, p0.cy] ) * this.scale * 10
+        //cleanup
         this.canvas.removeEventListener('dblclick', this.calcDimension)
         this.removeCursorPoint()
         this.dimension.stopEditing({code:"Escape"})
         //place on drawing
         if(this.state.dimension_type==='horizontal'){
           this.setState({current_dimension:deltaX})
-          this.dimension.points[1].cy = this.dimension.points[0].cy
+          p1.cy = p0.cy
         }else if(this.state.dimension_type==='vertical'){
           this.setState({current_dimension:deltaY})
-          this.dimension.points[0].cx = this.dimension.points[1].cx
+          p0.cx = p1.cx
         }else{
           this.setState({current_dimension:dist})
-          this.invert = 1
-          if(this.dimension.points[0].cx < this.dimension.points[1].cx &&this.dimension.points[0].cy > this.dimension.points[1].cy){
-            this.invert = -1
-          }
-          if(this.dimension.points[0].cx > this.dimension.points[1].cx && this.dimension.points[0].cy < this.dimension.points[1].cy){
-            this.invert = -1
-          }
         }
-        this.dimension.el.setAttribute('marker-start','url(#red-arrowhead2)')
-        this.dimension.el.setAttribute('marker-end','url(#red-arrowhead)')
         this.canvas.addEventListener('mousemove', this.previewDimension)
         this.canvas.addEventListener('dblclick', this.addDimension)
         recreate_snapping_points(this.state.polylines)
@@ -1125,29 +1031,36 @@ class Draw extends Component {
 
   previewDimension(e){
     const matrix = this.canvas.transform.baseVal[0].matrix
+    const p0 = this.dimension.points[0]
+    const p1 = this.dimension.points[1]
     if(!this.startX){
-      this.startX = this.dimension.points[1].cx
-      this.startY = this.dimension.points[1].cy
+      this.startX = p1.cx
+      this.startY = p1.cy
     }
-    const startX = this.dimension.points[1].cx
+    const startX = p1.cx
     const currentX = ((e.pageX-matrix.e-this.x)/matrix.a)
-    const startY = this.dimension.points[1].cy
+    const startY = p1.cy
     const currentY = ((e.pageY-matrix.f-this.y)/matrix.a)
     if(this.state.dimension_type==='horizontal'){
       this.dimension.move([0, currentY-startY])
     }else if(this.state.dimension_type==='vertical'){
       this.dimension.move([currentX-startX, 0])
     }else{
-      let slope = -1*((this.dimension.points[1].cx - this.dimension.points[0].cx) / (this.dimension.points[1].cy - this.dimension.points[0].cy))
-      let dist  = (this.startX - currentX ) * -1
+      const slope = -1*((p1.cx - p0.cx) / (p1.cy - p0.cy))
+      let dist  = (this.startX - currentX) *-1
+      let invert = 1
+      if((p0.cx < p1.cx && p0.cy > p1.cy) ||
+         (p0.cx > p1.cx && p0.cy < p1.cy)){
+        invert = -1
+      }
       if(slope === 0){
         this.dimension.move([dist,0])
       }else if(!isFinite(slope)){
-        dist  = (this.startY - currentY ) * -1
+        dist  = (this.startY - currentY) *-1
         this.dimension.move([0,dist])
       }else {
         if(slope < -2 || slope > 2){
-          dist  = (this.startY - currentY ) * this.invert
+          dist  = (this.startY - currentY ) * invert
         }
         //https://www.geeksforgeeks.org/find-points-at-a-given-distance-on-a-line-of-given-slope/
         const dx = (dist / Math.sqrt(1 + (slope * slope)));
@@ -1166,35 +1079,19 @@ class Draw extends Component {
     this.startX = null
     //copy and save
     let dimensions = this.state.dimensions
-    let dimension = new Polyline({
-      points: [],
-      id: String(this.id),
-      type: 'dimension',
-      selected: false,
-      canvas: this.canvas,
-      offsetX: this.x,
-      offsetY: this.y,
-      currentZoom: this.panZoomTiger.getZoom()
-    })
+    const dimension = new Dimension(this.getObj( String(this.id), "dimension", false ))
     this.id++
-    dimension.el.classList.add('dimension')
-    dimension.el.classList.remove('editing')
-    dimension.el.stroke = 'rgb(51, 51, 51)'
-    dimension.stroke = 'rgb(51, 51, 51)'
-    dimension.el.setAttribute('marker-start','url(#red-arrowhead2)')
-    dimension.el.setAttribute('marker-end','url(#red-arrowhead)')
     dimension.appendPoint([this.dimension.points[0].cx, this.dimension.points[0].cy])
     dimension.appendPoint([this.dimension.points[1].cx, this.dimension.points[1].cy])
     dimension.distance = this.state.current_dimension
     dimension.dimension_type = this.state.dimension_type
     dimension.el.dataset.distance = this.state.current_dimension
     dimension.el.dataset.dimension_type = this.state.dimension_type
-    dimension.el.setAttribute('type', 'dimension')
     dimension.stopEditing({code:"Escape"})
     dimensions.push(dimension)
     this.setState({dimensions})
-    this.globalStopEditingMode()
     //cleanup
+    this.globalStopEditingMode()
     this.canvas.removeChild(this.dimension.el)
     this.dimension = null
   }
@@ -1246,16 +1143,7 @@ class Draw extends Component {
         let points = toPoints(new_path)
         let str_points = []
         points.forEach(el => str_points.push([el.x, el.y]))//`${el.x},${el.y} `)
-        let t=new Polyline({
-          points: [],
-          id: String(this.id),
-          type: 'test',
-          selected: false,
-          canvas: this.canvas,
-          offsetX: this.x,
-          offsetY: this.y,
-          currentZoom: this.panZoomTiger.getZoom()
-        })
+        let t = new Polyline(this.getObj( String(this.id), 'test', false ))
         t.fill = path.style.fill
         t.stroke = path.style.stroke
         t.el.style.fillOpacity = path.style.fillOpacity
@@ -1359,11 +1247,6 @@ class Draw extends Component {
       let state_dimensions = this.state.dimensions
       if(dimension.length > 0){
         dimension.forEach(q=>{
-          q.el.classList.add('dimension')
-          q.el.classList.remove('editing')
-          q.el.setAttribute('marker-start','url(#red-arrowhead2)')
-          q.el.setAttribute('marker-end','url(#red-arrowhead)')
-          q.el.setAttribute('type', 'dimension')
           state_dimensions.push(q)
         })
         this.setState({dimensions:state_dimensions})
@@ -1506,7 +1389,12 @@ class Draw extends Component {
     this.addNotification('Export completed')
     download(json, `${this.state.title}.json`, "text/plain");
   }
-
+  toggleDropdown(){
+    this.dropdown.classList.toggle('show')
+  }
+  hideDropdown(){
+    this.dropdown.classList.remove('show')
+  }
   //////////////////////////////////////////////////////////////////////////////
   //                                  RENDER                                  //
   //////////////////////////////////////////////////////////////////////////////
@@ -1562,20 +1450,29 @@ class Draw extends Component {
                 alt="Move selected line" >
                 Move
               </div>
-              <div className="interface-button" onClick={()=>this.startDimension('vertical')}
-                title="Move selected line"
-                alt="Move selected line" >
-                Dimension Y
-              </div>
-              <div className="interface-button" onClick={()=>this.startDimension('horizontal')}
-                title="Move selected line"
-                alt="Move selected line" >
-                Dimension X
-              </div>
-              <div className="interface-button" onClick={()=>this.startDimension('aligned')}
-                title="Move selected line"
-                alt="Move selected line" >
-                Dimension aligned
+              <div className="interface-button" id="dropdown-parent"
+                onClick={()=>this.toggleDropdown()}>
+                Dimensions
+                <div id="dropdown"
+
+                  onMouseLeave={()=>this.hideDropdown()}
+                  ref={dropdown => {this.dropdown = dropdown}}>
+                  <div className="interface-button" onClick={()=>this.startDimension('vertical')}
+                    title="Move selected line"
+                    alt="Move selected line" >
+                    Vertical
+                  </div>
+                  <div className="interface-button" onClick={()=>this.startDimension('horizontal')}
+                    title="Move selected line"
+                    alt="Move selected line" >
+                    Horizontal
+                  </div>
+                  <div className="interface-button" onClick={()=>this.startDimension('aligned')}
+                    title="Move selected line"
+                    alt="Move selected line" >
+                    Aligned
+                  </div>
+                </div>
               </div>
               {!this.state.no_snapping &&
               <div className="interface-button" title="Click to turn off"
