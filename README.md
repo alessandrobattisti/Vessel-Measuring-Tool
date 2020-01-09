@@ -7,7 +7,7 @@ It can be used to digitize archeological drawings of vessels in order to calcula
 ### How does it work?
 You can watch this youtube video that show how to use this app. If you have problems you can contact me or open an issue on github.
 
-[![Youtube video](https://img.youtube.com/vi/5gUycvQceKA/0.jpg)](https://www.youtube.com/watch?v=5gUycvQceKA)
+[![Youtube video](https://img.youtube.com/vi/fWnz0wIRsFg/0.jpg)](https://www.youtube.com/watch?v=fWnz0wIRsFg)
 
 ### How to run
 - Clone or download the repository

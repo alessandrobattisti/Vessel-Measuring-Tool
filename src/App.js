@@ -43,7 +43,7 @@ class About extends Component{
         </p>
         <h4>How does it work?</h4>
         <p>You can watch this youtube video that show how to use this app. If you have problems you can contact me or open an issue on github.</p>
-          <p><iframe width="560" height="315" title="tutorial" src="https://www.youtube.com/embed/5gUycvQceKA"
+          <p><iframe width="560" height="315" title="tutorial" src="https://www.youtube.com/embed/fWnz0wIRsFg"
             frameBorder="0" allow="encrypted-media" allowFullScreen></iframe>
         </p>
         <h4>Saving</h4>
