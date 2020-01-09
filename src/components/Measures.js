@@ -136,7 +136,7 @@ export default class Measures extends Component {
 
               { this.props.vessel_volume &&
                <div className="measures">
-                 Volume: {this.state.handle_volume.toFixed(2)} <span className="unit">dm<sup>3</sup> (liters)</span>
+                 Volume: {this.state.handle_volume ? this.state.handle_volume.toFixed(2) : '' } <span className="unit">dm<sup>3</sup> (liters)</span>
                </div>
                }
 
